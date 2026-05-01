@@ -1,47 +1,39 @@
-import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
-import { ConfigModule } from '@nestjs/config';
-import * as process from 'node:process';
+import { Module } from "@nestjs/common";
+import { SequelizeModule } from "@nestjs/sequelize";
+import { ConfigModule } from "@nestjs/config";
+import * as process from "node:process";
 
-import { UsersModule } from './users/users.module';
-import { OrderStatusesModule } from './order-statuses/order-statuses.module';
-import { DiscountsModule } from './discounts/discounts.module';
-import { BrandsModule } from './brands/brands.module';
-import { SpeciesModule } from './species/species.module';
-import { BreedsModule } from './breeds/breeds.module';
-import { PetsModule } from './pets/pets.module';
-import { CategoriesModule } from './categories/categories.module';
-import { ProductsModule } from './products/products.module';
-import { OrdersModule } from './orders/orders.module';
-import { OrderItemsModule } from './order-items/order-items.module';
-import { CharacteristicsModule } from './characteristics/characteristics.module';
-import { ProductCharacteristicsModule } from './product-characteristics/product-characteristics.module';
-import { ProductImagesModule } from './product-images/product-images.module';
-import { ReviewsModule } from './reviews/reviews.module';
-import { WishlistsModule } from './wishlists/wishlists.module';
-import { DiscountProductsModule } from './discount-products/discount-products.module';
-import { AuthModule } from './auth/auth.module';
-import { RolesModule } from './roles/roles.module';
+import { UsersModule } from "./src/users/users.module";
+import { DiscountsModule } from "./src/discounts/discounts.module";
+import { BrandsModule } from "./src/brands/brands.module";
+import { PetsModule } from "./src/pets/pets.module";
+import { CategoriesModule } from "./src/categories/categories.module";
+import { ProductsModule } from "./src/products/products.module";
+import { OrdersModule } from "./src/orders/orders.module";
+import { CharacteristicsModule } from "./src/characteristics/characteristics.module";
+import { ReviewsModule } from "./src/reviews/reviews.module";
+import { WishlistsModule } from "./src/wishlists/wishlists.module";
+import { DiscountProductsModule } from "./src/discount-products/discount-products.module";
+import { AuthModule } from "./src/auth/auth.module";
+import { RolesModule } from "./src/roles/roles.module";
 
-import { User } from './users/users.model';
-import { OrderStatus } from './order-statuses/order-statuses.model';
-import { Discount } from './discounts/discounts.model';
-import { Brand } from './brands/brands.model';
-import { Species } from './species/species.model';
-import { Breed } from './breeds/breeds.model';
-import { Pet } from './pets/pets.model';
-import { Category } from './categories/categories.model';
-import { Product } from './products/products.model';
-import { Order } from './orders/orders.model';
-import { OrderItem } from './order-items/order-items.model';
-import { Characteristic } from './characteristics/characteristics.model';
-import { ProductCharacteristic } from './product-characteristics/product-characteristics.model';
-import { ProductImage } from './product-images/product-images.model';
-import { Review } from './reviews/reviews.model';
-import { Wishlist } from './wishlists/wishlists.model';
-import { DiscountProduct } from './discount-products/discount-products.model';
-import { Role } from './roles/roles.model';
-import { UserRoles } from './roles/user-roles.model';
+import { User } from "./src/users/users.model";
+import { Discount } from "./src/discounts/discounts.model";
+import { Brand } from "./src/brands/brands.model";
+import { Species } from "./src/pets/species.model";
+import { Breed } from "./src/pets/breeds.model";
+import { Pet } from "./src/pets/pets.model";
+import { Category } from "./src/categories/categories.model";
+import { Product } from "./src/products/products.model";
+import { Order, OrderItem, OrderStatus } from "./src/orders/orders.model";
+import { Characteristic } from "./src/characteristics/characteristics.model";
+import { ProductCharacteristic } from "./src/products/product-characteristics.model";
+import { ProductImage } from "./src/products/product-images.model";
+import { Review } from "./src/reviews/reviews.model";
+import { Wishlist } from "./src/wishlists/wishlists.model";
+import { DiscountProduct } from "./src/discount-products/discount-products.model";
+import { Role } from "./src/roles/roles.model";
+import { UserRoles } from "./src/roles/user-roles.model";
 
 @Module({
   imports: [
@@ -50,35 +42,45 @@ import { UserRoles } from './roles/user-roles.model';
     }),
 
     SequelizeModule.forRoot({
-      dialect: 'postgres',
+      dialect: "postgres",
       host: process.env.POSTGRES_HOST,
       port: Number(process.env.POSTGRES_PORT),
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       models: [
-        User, OrderStatus, Discount, Brand, Species, Breed, Pet, Category,
-        Product, Order, OrderItem, Characteristic, ProductCharacteristic,
-        ProductImage, Review, Wishlist, DiscountProduct, Role, UserRoles
+        User,
+        Discount,
+        Brand,
+        Species,
+        Breed,
+        Pet,
+        Category,
+        Product,
+        OrderStatus,
+        OrderItem,
+        Order,
+        Characteristic,
+        ProductCharacteristic,
+        ProductImage,
+        Review,
+        Wishlist,
+        DiscountProduct,
+        Role,
+        UserRoles,
       ],
       autoLoadModels: true,
       synchronize: true,
       sync: { force: true },
     }),
     UsersModule,
-    OrderStatusesModule,
     DiscountsModule,
     BrandsModule,
-    SpeciesModule,
-    BreedsModule,
     PetsModule,
     CategoriesModule,
     ProductsModule,
     OrdersModule,
-    OrderItemsModule,
     CharacteristicsModule,
-    ProductCharacteristicsModule,
-    ProductImagesModule,
     ReviewsModule,
     WishlistsModule,
     DiscountProductsModule,

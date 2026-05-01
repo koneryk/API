@@ -1,8 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Order } from './orders.model';
-import { OrderItem } from './order-items.model';
-import { OrderStatus } from './order-statuses.model';
+import { Order, OrderItem, OrderStatus } from './orders.model';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { CreateOrderItemDto } from './dto/create-order-item.dto';

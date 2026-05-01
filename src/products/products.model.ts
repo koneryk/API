@@ -5,7 +5,7 @@ import { Brand } from '../brands/brands.model';
 import { Review } from '../reviews/reviews.model';
 import { DiscountProduct } from '../discount-products/discount-products.model';
 import { Discount } from '../discounts/discounts.model';
-import { OrderItem } from '../orders/order-items.model';
+import { OrderItem } from '../orders/orders.model';
 import { Characteristic } from 'src/characteristics/characteristics.model';
 
 @Table({ tableName: 'products', timestamps: true, updatedAt: 'updated_at', createdAt: 'created_at' })

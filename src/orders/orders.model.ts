@@ -1,9 +1,26 @@
 import { Column, DataType, Model, Table, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../users/users.model';
-import { OrderStatus } from './order-statuses.model';
 import { Discount } from '../discounts/discounts.model';
-import { OrderItem } from './order-items.model';
+import { Product } from '../products/products.model';
+
+@Table({ tableName: 'order_statuses', timestamps: false })
+export class OrderStatus extends Model<OrderStatus> {
+  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @Column({ type: DataType.INTEGER, autoIncrement: true, primaryKey: true })
+  declare id: number;
+
+  @ApiProperty({ example: 'pending', description: 'Название статуса' })
+  @Column({ type: DataType.STRING, unique: true, allowNull: false })
+  declare status_name: string;
+
+  @ApiProperty({ example: 'Заказ ожидает обработки', description: 'Описание' })
+  @Column({ type: DataType.STRING })
+  declare description: string;
+
+  @HasMany(() => Order)
+  orders: Order[];
+}
 
 @Table({ tableName: 'orders', timestamps: true, createdAt: 'created_at', updatedAt: false })
 export class Order extends Model<Order> {
@@ -56,6 +73,34 @@ export class Order extends Model<Order> {
   @BelongsTo(() => Discount)
   discount: Discount;
 
-  @HasMany(() => OrderItem)
-  items: OrderItem[];
 }
+
+@Table({ tableName: 'order_items', timestamps: false })
+export class OrderItem extends Model<OrderItem> {
+  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @Column({ type: DataType.INTEGER, autoIncrement: true, primaryKey: true })
+  declare id: number;
+
+  @ForeignKey(() => Order)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare order_id: number;
+
+  @ForeignKey(() => Product)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare product_id: number;
+
+  @ApiProperty({ example: '2', description: 'Количество' })
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare quantity: number;
+
+  @ApiProperty({ example: '1500.00', description: 'Цена за единицу' })
+  @Column({ type: DataType.DECIMAL(10,2), allowNull: false })
+  declare price: number;
+
+  @BelongsTo(() => Order)
+  order: Order;
+
+  @BelongsTo(() => Product)
+  product: Product;
+}
+

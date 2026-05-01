@@ -1,8 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { Order } from './orders.model';
-import { OrderItem } from './order-items.model';
-import { OrderStatus } from './order-statuses.model';
+import { Order, OrderItem, OrderStatus } from './orders.model';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
