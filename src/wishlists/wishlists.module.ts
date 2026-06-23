@@ -5,7 +5,9 @@ import { WishlistsService } from './wishlists.service';
 import { Wishlist } from './wishlists.model';
 import { AuthModule } from '../auth/auth.module';
 @Module({
-  imports: [AuthModule,SequelizeModule.forFeature([Wishlist])],
+  imports: [AuthModule,SequelizeModule.forFeature([Wishlist]),
+  AuthModule
+  ],
   controllers: [WishlistsController],
   providers: [WishlistsService],
   exports: [WishlistsService],

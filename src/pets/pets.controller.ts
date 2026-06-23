@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Pet } from './pets.model';
 import { Breed } from './breeds.model';
@@ -12,6 +12,7 @@ import { CreateSpeciesDto } from './dto/create-species.dto';
 import { UpdateSpeciesDto } from './dto/update-species.dto';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles-auth.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Питомцы')
 @ApiBearerAuth()
@@ -19,19 +20,26 @@ import { Roles } from '../auth/roles-auth.decorator';
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}
 
-
   @ApiOperation({ summary: 'Добавление нового питомца' })
   @ApiResponse({ status: 201, type: Pet, description: 'Питомец добавлен' })
+  @UseGuards(JwtAuthGuard)
   @Post()
   createPet(@Body() createPetDto: CreatePetDto, @Req() req) {
+    if (!req.user) {
+      throw new HttpException('Пользователь не авторизован', HttpStatus.UNAUTHORIZED);
+    }
     const userId = req.user.id;
     return this.petsService.createPet(createPetDto, userId);
   }
 
   @ApiOperation({ summary: 'Получение всех питомцев пользователя' })
   @ApiResponse({ status: 200, type: [Pet], description: 'Список питомцев' })
+  @UseGuards(JwtAuthGuard)
   @Get('my')
   findMyPets(@Req() req) {
+    if (!req.user) {
+      throw new HttpException('Пользователь не авторизован', HttpStatus.UNAUTHORIZED);
+    }
     const userId = req.user.id;
     return this.petsService.findPetsByUser(userId);
   }
@@ -74,7 +82,6 @@ export class PetsController {
   removePet(@Param('id') id: string) {
     return this.petsService.removePet(+id);
   }
-
 
   @ApiOperation({ summary: 'Создание новой породы' })
   @ApiResponse({ status: 201, type: Breed, description: 'Порода создана' })

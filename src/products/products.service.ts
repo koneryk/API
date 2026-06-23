@@ -20,37 +20,44 @@ import { Op } from 'sequelize';
 @Injectable()
 export class ProductsService {
   constructor(
-      @InjectModel(Product)
-      private productModel: typeof Product,
-      @InjectModel(ProductImage)
-      private productImageModel: typeof ProductImage,
-      @InjectModel(ProductCharacteristic)
-      private productCharacteristicModel: typeof ProductCharacteristic,
+    @InjectModel(Product)
+    private productModel: typeof Product,
+    @InjectModel(ProductImage)
+    private productImageModel: typeof ProductImage,
+    @InjectModel(ProductCharacteristic)
+    private productCharacteristicModel: typeof ProductCharacteristic,
   ) {}
 
-
   async create(createProductDto: CreateProductDto): Promise<Product> {
+    if (!createProductDto.sku) {
+      throw new HttpException('Артикул (sku) обязателен', HttpStatus.BAD_REQUEST);
+    }
+    if (!createProductDto.category_id) {
+      throw new HttpException('ID категории обязателен', HttpStatus.BAD_REQUEST);
+    }
+
     const productData = {
       sku: createProductDto.sku,
       name: createProductDto.name,
-      category_id: createProductDto.category_id,
-      brand_id: createProductDto.brand_id,
+      description: createProductDto.description || '',
       price: createProductDto.price,
-      stock: createProductDto.stock ?? 0,
-      is_active: createProductDto.is_active ?? true,
-      description: createProductDto.description,
-      ingredients: createProductDto.ingredients,
+      stock: createProductDto.stock || 0,
+      is_active: createProductDto.is_active !== undefined ? createProductDto.is_active : true,
+      ingredients: createProductDto.ingredients || '',
+      category_id: createProductDto.category_id,
+      brand_id: createProductDto.brand_id || null,
     };
+
     return this.productModel.create(productData as any);
   }
 
   async findAll(): Promise<Product[]> {
     return this.productModel.findAll({
       include: [
-        { model: Category },
-        { model: Brand },
-        { model: ProductImage },
-        { model: Review },
+        { model: Category, as: 'category' },
+        { model: Brand, as: 'brand' },
+        { model: ProductImage, as: 'images' },
+        { model: Review, as: 'reviews' },
       ],
     });
   }
@@ -59,9 +66,9 @@ export class ProductsService {
     return this.productModel.findAll({
       where: { is_active: true },
       include: [
-        { model: Category },
-        { model: Brand },
-        { model: ProductImage },
+        { model: Category, as: 'category' },
+        { model: Brand, as: 'brand' },
+        { model: ProductImage, as: 'images' },
       ],
     });
   }
@@ -70,8 +77,8 @@ export class ProductsService {
     return this.productModel.findAll({
       where: { category_id: categoryId, is_active: true },
       include: [
-        { model: Brand },
-        { model: ProductImage },
+        { model: Brand, as: 'brand' },
+        { model: ProductImage, as: 'images' },
       ],
     });
   }
@@ -80,8 +87,8 @@ export class ProductsService {
     return this.productModel.findAll({
       where: { brand_id: brandId, is_active: true },
       include: [
-        { model: Category },
-        { model: ProductImage },
+        { model: Category, as: 'category' },
+        { model: ProductImage, as: 'images' },
       ],
     });
   }
@@ -97,9 +104,9 @@ export class ProductsService {
         is_active: true,
       },
       include: [
-        { model: Category },
-        { model: Brand },
-        { model: ProductImage },
+        { model: Category, as: 'category' },
+        { model: Brand, as: 'brand' },
+        { model: ProductImage, as: 'images' },
       ],
     });
   }
@@ -107,20 +114,22 @@ export class ProductsService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productModel.findByPk(id, {
       include: [
-        { model: Category },
-        { model: Brand },
-        { model: ProductImage },
+        { model: Category, as: 'category' },
+        { model: Brand, as: 'brand' },
+        { model: ProductImage, as: 'images' },
         {
           model: ProductCharacteristic,
-          include: [{ model: Characteristic }]
+          as: 'characteristics',
+          include: [{ model: Characteristic, as: 'characteristic' }]
         },
         {
           model: Review,
-          include: [{ model: User }],
+          as: 'reviews',
+          include: [{ model: User, as: 'user' }],
           where: { is_approved: true },
           required: false
         },
-        { model: Discount, through: { attributes: [] } },
+        { model: Discount, as: 'discounts', through: { attributes: [] } },
       ],
     });
 
@@ -135,9 +144,9 @@ export class ProductsService {
     const product = await this.productModel.findOne({
       where: { sku },
       include: [
-        { model: Category },
-        { model: Brand },
-        { model: ProductImage },
+        { model: Category, as: 'category' },
+        { model: Brand, as: 'brand' },
+        { model: ProductImage, as: 'images' },
       ],
     });
 
@@ -150,7 +159,16 @@ export class ProductsService {
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
-    await product.update(updateProductDto);
+    
+    const updateData: any = { ...updateProductDto };
+    if (updateProductDto.category_id !== undefined) {
+      updateData.category_id = updateProductDto.category_id;
+    }
+    if (updateProductDto.brand_id !== undefined) {
+      updateData.brand_id = updateProductDto.brand_id;
+    }
+    
+    await product.update(updateData);
     return this.findOne(id);
   }
 
@@ -158,7 +176,6 @@ export class ProductsService {
     const product = await this.findOne(id);
     await product.destroy();
   }
-
 
   async createProductImage(createProductImageDto: CreateProductImageDto): Promise<ProductImage> {
     const product = await this.productModel.findByPk(createProductImageDto.product_id);
@@ -170,8 +187,8 @@ export class ProductsService {
 
     if (isPrimary) {
       await this.productImageModel.update(
-          { is_primary: false },
-          { where: { product_id: createProductImageDto.product_id } }
+        { is_primary: false },
+        { where: { product_id: createProductImageDto.product_id } }
       );
     }
 
@@ -186,7 +203,7 @@ export class ProductsService {
 
   async findAllProductImages(): Promise<ProductImage[]> {
     return this.productImageModel.findAll({
-      include: [{ model: Product }],
+      include: [{ model: Product, as: 'product' }],
     });
   }
 
@@ -209,7 +226,7 @@ export class ProductsService {
 
   async findOneProductImage(id: number): Promise<ProductImage> {
     const image = await this.productImageModel.findByPk(id, {
-      include: [{ model: Product }],
+      include: [{ model: Product, as: 'product' }],
     });
 
     if (!image) {
@@ -229,8 +246,8 @@ export class ProductsService {
     const image = await this.findOneProductImage(id);
 
     await this.productImageModel.update(
-        { is_primary: false },
-        { where: { product_id: image.product_id } }
+      { is_primary: false },
+      { where: { product_id: image.product_id } }
     );
 
     await image.update({ is_primary: true });
@@ -242,7 +259,6 @@ export class ProductsService {
     const image = await this.findOneProductImage(id);
     await image.destroy();
   }
-
 
   async createProductCharacteristic(createDto: CreateProductCharacteristicDto): Promise<ProductCharacteristic> {
     const product = await this.productModel.findByPk(createDto.product_id);
@@ -262,8 +278,8 @@ export class ProductsService {
   async findAllProductCharacteristics(): Promise<ProductCharacteristic[]> {
     return this.productCharacteristicModel.findAll({
       include: [
-        { model: Product },
-        { model: Characteristic },
+        { model: Product, as: 'product' },
+        { model: Characteristic, as: 'characteristic' },
       ],
     });
   }
@@ -276,15 +292,15 @@ export class ProductsService {
 
     return this.productCharacteristicModel.findAll({
       where: { product_id: productId },
-      include: [{ model: Characteristic }],
+      include: [{ model: Characteristic, as: 'characteristic' }],
     });
   }
 
   async findOneProductCharacteristic(id: number): Promise<ProductCharacteristic> {
     const item = await this.productCharacteristicModel.findByPk(id, {
       include: [
-        { model: Product },
-        { model: Characteristic },
+        { model: Product, as: 'product' },
+        { model: Characteristic, as: 'characteristic' },
       ],
     });
 
@@ -296,8 +312,8 @@ export class ProductsService {
   }
 
   async updateProductCharacteristic(
-      id: number,
-      updateDto: UpdateProductCharacteristicDto
+    id: number,
+    updateDto: UpdateProductCharacteristicDto
   ): Promise<ProductCharacteristic> {
     const item = await this.findOneProductCharacteristic(id);
     await item.update(updateDto);

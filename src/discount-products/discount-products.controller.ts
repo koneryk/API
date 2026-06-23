@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DiscountProductsService } from './discount-products.service';
 import { CreateDiscountProductDto } from './dto/create-discount-product.dto';
@@ -29,7 +29,21 @@ export class DiscountProductsController {
   @Roles('ADMIN', 'MANAGER')
   @UseGuards(RolesGuard)
   @Delete(':discountId/:productId')
-  remove(@Param('discountId') discountId: string, @Param('productId') productId: string) {
-    return this.discountProductsService.remove(+discountId, +productId);
+  async remove(
+    @Param('discountId') discountId: string, 
+    @Param('productId') productId: string
+  ) {
+    if (!discountId || !productId) {
+      throw new HttpException('discountId и productId обязательны', HttpStatus.BAD_REQUEST);
+    }
+    
+    const discountIdNum = parseInt(discountId, 10);
+    const productIdNum = parseInt(productId, 10);
+    
+    if (isNaN(discountIdNum) || isNaN(productIdNum)) {
+      throw new HttpException('discountId и productId должны быть числами', HttpStatus.BAD_REQUEST);
+    }
+    
+    return this.discountProductsService.remove(discountIdNum, productIdNum);
   }
 }

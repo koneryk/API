@@ -67,7 +67,12 @@ export class UsersController {
   ) {
     return this.usersService.assignRole(+id, roleValue);
   }
-
+  @ApiOperation({ summary: 'Создание администратора (открытый доступ)' })
+@ApiResponse({ status: 201, type: User, description: 'Администратор создан' })
+@Post('create-admin')
+async createAdmin(@Body() createUserDto: CreateUserDto) {
+  return this.usersService.createAdmin(createUserDto);
+}
   @ApiOperation({ summary: 'Удалить роль у пользователя' })
   @ApiResponse({ status: 200, description: 'Роль удалена' })
   @Roles('ADMIN')

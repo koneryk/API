@@ -13,19 +13,33 @@ export class DiscountsService {
     private discountModel: typeof Discount,
   ) {}
 
-  async create(createDiscountDto: CreateDiscountDto): Promise<Discount> {
-    const discountData = {
-      code: createDiscountDto.code,
-      name: createDiscountDto.name,
-      type: createDiscountDto.type,
-      value: createDiscountDto.value,
-      min_order: createDiscountDto.min_order,
-      start_date: createDiscountDto.start_date,
-      end_date: createDiscountDto.end_date,
-      is_active: createDiscountDto.is_active ?? true,
-    };
-    return this.discountModel.create(discountData as any); 
+async create(createDiscountDto: CreateDiscountDto): Promise<Discount> {
+  if (!createDiscountDto.start_date) {
+    throw new HttpException('Дата начала скидки обязательна', HttpStatus.BAD_REQUEST);
   }
+  if (!createDiscountDto.end_date) {
+    throw new HttpException('Дата окончания скидки обязательна', HttpStatus.BAD_REQUEST);
+  }
+
+  const existing = await this.discountModel.findOne({
+    where: { code: createDiscountDto.code },
+  });
+  if (existing) {
+    throw new HttpException('Скидка с таким кодом уже существует', HttpStatus.BAD_REQUEST);
+  }
+
+  const discountData = {
+    code: createDiscountDto.code,
+    name: createDiscountDto.name,
+    type: createDiscountDto.type,
+    value: createDiscountDto.value,
+    min_order: createDiscountDto.min_order || 0,
+    start_date: new Date(createDiscountDto.start_date),
+    end_date: new Date(createDiscountDto.end_date),
+    is_active: createDiscountDto.is_active !== undefined ? createDiscountDto.is_active : true,
+  };
+  return this.discountModel.create(discountData as any);
+}
 
   async findAll(): Promise<Discount[]> {
     return this.discountModel.findAll({

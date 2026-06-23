@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Order, OrderItem, OrderStatus } from './orders.model';
 import { OrdersService } from './orders.service';
@@ -10,30 +10,24 @@ import { CreateOrderStatusDto } from './dto/create-order-status.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles-auth.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
 
 @ApiTags('Заказы')
 @ApiBearerAuth()
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
-
+  
 
   @ApiOperation({ summary: 'Создание нового заказа' })
   @ApiResponse({ status: 201, type: Order, description: 'Заказ создан' })
   @Post()
+  @UseGuards(JwtAuthGuard) 
   create(@Body() createOrderDto: CreateOrderDto, @Req() req) {
     const userId = req.user.id;
     return this.ordersService.create(createOrderDto, userId);
   }
-
-  @ApiOperation({ summary: 'Получение всех заказов пользователя' })
-  @ApiResponse({ status: 200, type: [Order], description: 'Список заказов' })
-  @Get('my')
-  findMyOrders(@Req() req) {
-    const userId = req.user.id;
-    return this.ordersService.findByUser(userId);
-  }
-
   @ApiOperation({ summary: 'Получение всех заказов' })
   @ApiResponse({ status: 200, type: [Order], description: 'Список всех заказов' })
   @Roles('ADMIN', 'MANAGER')
@@ -41,6 +35,78 @@ export class OrdersController {
   @Get()
   findAll() {
     return this.ordersService.findAll();
+  }
+
+  @ApiOperation({ summary: 'Получение всех заказов пользователя' })
+  @ApiResponse({ status: 200, type: [Order], description: 'Список заказов' })
+  @UseGuards(JwtAuthGuard)
+  @Get('my')
+  async findMyOrders(@Req() req) {
+    if (!req.user) {
+      throw new HttpException('Пользователь не авторизован', HttpStatus.UNAUTHORIZED);
+    }
+    const userId = req.user.id;
+    return this.ordersService.findByUser(userId);
+  }
+
+  @ApiOperation({ summary: 'Получение всех статусов заказов' })
+  @ApiResponse({ status: 200, type: [OrderStatus], description: 'Список статусов' })
+  @Get('statuses')
+  findAllOrderStatuses() {
+    return this.ordersService.findAllOrderStatuses();
+  }
+
+  @ApiOperation({ summary: 'Создание нового статуса заказа' })
+  @ApiResponse({ status: 201, type: OrderStatus, description: 'Статус создан' })
+  @Roles('ADMIN', 'MANAGER')
+  @UseGuards(RolesGuard)
+  @Post('statuses')
+  createOrderStatus(@Body() createOrderStatusDto: CreateOrderStatusDto) {
+    return this.ordersService.createOrderStatus(createOrderStatusDto);
+  }
+
+  @ApiOperation({ summary: 'Получение статуса по ID' })
+  @ApiResponse({ status: 200, type: OrderStatus, description: 'Статус найден' })
+  @Get('statuses/:id')
+  findOneOrderStatus(@Param('id') id: string) {
+    return this.ordersService.findOneOrderStatus(+id);
+  }
+
+  @ApiOperation({ summary: 'Получение всех позиций заказа' })
+  @ApiResponse({ status: 200, type: [OrderItem], description: 'Список позиций' })
+  @Roles('ADMIN', 'MANAGER')
+  @UseGuards(RolesGuard)
+  @Get('items')
+  findAllOrderItems() {
+    return this.ordersService.findAllOrderItems();
+  }
+
+  @ApiOperation({ summary: 'Получение позиций по заказу' })
+  @ApiResponse({ status: 200, type: [OrderItem], description: 'Позиции заказа' })
+  @Get('items/by-order/:orderId')
+  findByOrderOrderItems(@Param('orderId') orderId: string) {
+    return this.ordersService.findByOrderOrderItems(+orderId);
+  }
+
+  @ApiOperation({ summary: 'Получение позиции по ID' })
+  @ApiResponse({ status: 200, type: OrderItem, description: 'Позиция найдена' })
+  @Get('items/:id')
+  findOneOrderItem(@Param('id') id: string) {
+    return this.ordersService.findOneOrderItem(+id);
+  }
+
+  @ApiOperation({ summary: 'Получение заказа по ID' })
+  @ApiResponse({ status: 200, type: Order, description: 'Заказ найден' })
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.ordersService.findOne(+id);
+  }
+
+  @ApiOperation({ summary: 'Получение заказа по номеру' })
+  @ApiResponse({ status: 200, type: Order, description: 'Заказ найден' })
+  @Get('number/:orderNumber')
+  findByOrderNumber(@Param('orderNumber') orderNumber: string) {
+    return this.ordersService.findByOrderNumber(orderNumber);
   }
 
   @ApiOperation({ summary: 'Получение заказов по пользователю' })
@@ -59,20 +125,6 @@ export class OrdersController {
   @Get('status/:statusId')
   findByStatus(@Param('statusId') statusId: string) {
     return this.ordersService.findByStatus(+statusId);
-  }
-
-  @ApiOperation({ summary: 'Получение заказа по ID' })
-  @ApiResponse({ status: 200, type: Order, description: 'Заказ найден' })
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
-  }
-
-  @ApiOperation({ summary: 'Получение заказа по номеру' })
-  @ApiResponse({ status: 200, type: Order, description: 'Заказ найден' })
-  @Get('number/:orderNumber')
-  findByOrderNumber(@Param('orderNumber') orderNumber: string) {
-    return this.ordersService.findByOrderNumber(orderNumber);
   }
 
   @ApiOperation({ summary: 'Обновление заказа' })
@@ -109,35 +161,11 @@ export class OrdersController {
     return this.ordersService.remove(+id);
   }
 
-
   @ApiOperation({ summary: 'Добавление позиции в заказ' })
   @ApiResponse({ status: 201, type: OrderItem, description: 'Позиция добавлена' })
   @Post('items')
   createOrderItem(@Body() createOrderItemDto: CreateOrderItemDto) {
     return this.ordersService.createOrderItem(createOrderItemDto);
-  }
-
-  @ApiOperation({ summary: 'Получение всех позиций заказа' })
-  @ApiResponse({ status: 200, type: [OrderItem], description: 'Список позиций' })
-  @Roles('ADMIN', 'MANAGER')
-  @UseGuards(RolesGuard)
-  @Get('items')
-  findAllOrderItems() {
-    return this.ordersService.findAllOrderItems();
-  }
-
-  @ApiOperation({ summary: 'Получение позиций по заказу' })
-  @ApiResponse({ status: 200, type: [OrderItem], description: 'Позиции заказа' })
-  @Get('items/by-order/:orderId')
-  findByOrderOrderItems(@Param('orderId') orderId: string) {
-    return this.ordersService.findByOrderOrderItems(+orderId);
-  }
-
-  @ApiOperation({ summary: 'Получение позиции по ID' })
-  @ApiResponse({ status: 200, type: OrderItem, description: 'Позиция найдена' })
-  @Get('items/:id')
-  findOneOrderItem(@Param('id') id: string) {
-    return this.ordersService.findOneOrderItem(+id);
   }
 
   @ApiOperation({ summary: 'Обновление позиции' })
@@ -154,29 +182,6 @@ export class OrdersController {
     return this.ordersService.removeOrderItem(+id);
   }
 
-
-  @ApiOperation({ summary: 'Создание нового статуса заказа' })
-  @ApiResponse({ status: 201, type: OrderStatus, description: 'Статус создан' })
-  @Roles('ADMIN', 'MANAGER')
-  @UseGuards(RolesGuard)
-  @Post('statuses')
-  createOrderStatus(@Body() createOrderStatusDto: CreateOrderStatusDto) {
-    return this.ordersService.createOrderStatus(createOrderStatusDto);
-  }
-
-  @ApiOperation({ summary: 'Получение всех статусов заказов' })
-  @ApiResponse({ status: 200, type: [OrderStatus], description: 'Список статусов' })
-  @Get('statuses')
-  findAllOrderStatuses() {
-    return this.ordersService.findAllOrderStatuses();
-  }
-
-  @ApiOperation({ summary: 'Получение статуса по ID' })
-  @ApiResponse({ status: 200, type: OrderStatus, description: 'Статус найден' })
-  @Get('statuses/:id')
-  findOneOrderStatus(@Param('id') id: string) {
-    return this.ordersService.findOneOrderStatus(+id);
-  }
 
   @ApiOperation({ summary: 'Обновление статуса' })
   @ApiResponse({ status: 200, type: OrderStatus, description: 'Статус обновлен' })

@@ -20,36 +20,54 @@ export class OrdersService {
       private orderItemModel: typeof OrderItem,
       @InjectModel(OrderStatus)
       private orderStatusModel: typeof OrderStatus,
+      @InjectModel(Product)
+      private productModel: typeof Product,
   ) {}
 
 
   async create(createOrderDto: CreateOrderDto, userId: number): Promise<Order> {
-    const orderData = {
-      user_id: userId,
-      order_number: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      status_id: createOrderDto.status_id,
-      discount_id: createOrderDto.discount_id,
-      total_amount: createOrderDto.total_amount,
-      shipping_address: createOrderDto.shipping_address,
-      payment_method: createOrderDto.payment_method,
-    };
+  console.log('Создание заказа:', createOrderDto);
 
-    const order = await this.orderModel.create(orderData as any);
-
-    if (createOrderDto.items && createOrderDto.items.length > 0) {
-      for (const item of createOrderDto.items) {
-        const itemData = {
-          order_id: order.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-        };
-        await this.orderItemModel.create(itemData as any);
-      }
-    }
-
-    return this.findOne(order.id);
+  if (!createOrderDto.shipping_address) {
+    throw new HttpException('Адрес доставки обязателен', HttpStatus.BAD_REQUEST);
   }
+  if (!createOrderDto.items || createOrderDto.items.length === 0) {
+    throw new HttpException('Заказ должен содержать товары', HttpStatus.BAD_REQUEST);
+  }
+
+  const orderData = {
+    user_id: userId,
+    order_number: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    status_id: createOrderDto.status_id || 1,
+    discount_id: createOrderDto.discount_id || null,
+    total_amount: createOrderDto.total_amount || 0,
+    shipping_address: createOrderDto.shipping_address,
+    payment_method: createOrderDto.payment_method || 'cash',
+  };
+
+  const order = await this.orderModel.create(orderData as any);
+
+  let totalAmount = 0;
+  if (createOrderDto.items && createOrderDto.items.length > 0) {
+    for (const item of createOrderDto.items) {
+      const product = await this.productModel.findByPk(item.product_id);
+      if (!product) {
+        throw new HttpException(`Товар с ID ${item.product_id} не найден`, HttpStatus.NOT_FOUND);
+      }
+      const itemData = {
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price || product.price,
+      };
+      await this.orderItemModel.create(itemData as any);
+      totalAmount += itemData.price * itemData.quantity;
+    }
+  }
+  await order.update({ total_amount: totalAmount });
+
+  return this.findOne(order.id);
+}
 
   async findAll(): Promise<Order[]> {
     return this.orderModel.findAll({
@@ -83,21 +101,27 @@ export class OrdersService {
   }
 
   async findOne(id: number): Promise<Order> {
-    const order = await this.orderModel.findByPk(id, {
-      include: [
-        { model: User },
-        { model: OrderStatus },
-        { model: Discount },
-        { model: OrderItem, include: [{ model: Product }] },
-      ],
-    });
-
-    if (!order) {
-      throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
-    }
-
-    return order;
+  if (!id || isNaN(id)) {
+    throw new HttpException('Некорректный ID заказа', HttpStatus.BAD_REQUEST);
   }
+  const order = await this.orderModel.findByPk(id, {
+    include: [
+      { model: User },
+      { model: OrderStatus, as: 'status' },
+      { model: Discount },
+      {
+        model: OrderItem,
+        include: [{ model: Product }],
+      },
+    ],
+  });
+
+  if (!order) {
+    throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
+  }
+
+  return order;
+}
 
   async findByOrderNumber(orderNumber: string): Promise<Order> {
     const order = await this.orderModel.findOne({
@@ -213,9 +237,7 @@ export class OrdersService {
   }
 
   async findAllOrderStatuses(): Promise<OrderStatus[]> {
-    return this.orderStatusModel.findAll({
-      include: [{ model: Order }],
-    });
+    return this.orderStatusModel.findAll();
   }
 
   async findOneOrderStatus(id: number): Promise<OrderStatus> {

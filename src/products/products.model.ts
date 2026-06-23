@@ -50,26 +50,26 @@ export class Product extends Model<Product> {
   @Column({ type: DataType.TEXT })
   declare ingredients: string;
 
-  @BelongsTo(() => Category,{as: 'category'})
-  category: Category;
+  @BelongsTo(() => Category, { as: 'category' })
+category: Category;
 
-  @BelongsTo(() => Brand)
-  brand: Brand;
+@BelongsTo(() => Brand, { as: 'brand' })
+brand: Brand;
 
-  @HasMany(() => ProductImage, {as: 'images'})
-  images: ProductImage[];
+@HasMany(() => ProductImage, { as: 'images' })
+images: ProductImage[];
 
-  @HasMany(() => ProductCharacteristic)
-  characteristics: ProductCharacteristic[];
+@HasMany(() => ProductCharacteristic, { as: 'characteristics' })
+characteristics: ProductCharacteristic[];
 
-  @HasMany(() => Review)
-  reviews: Review[];
+@HasMany(() => Review, { as: 'reviews' })
+reviews: Review[];
 
-  @BelongsToMany(() => Discount, () => DiscountProduct)
-  discounts: Discount[];
+@BelongsToMany(() => Discount, () => DiscountProduct)
+discounts: Discount[];
 
-  @HasMany(() => OrderItem)
-  orderItems: OrderItem[];
+@HasMany(() => OrderItem, { as: 'orderItems' })
+orderItems: OrderItem[];
 }
 @Table({ tableName: 'product_images', timestamps: false })
 class ProductImage extends Model<ProductImage> {

@@ -16,6 +16,7 @@ import { WishlistsModule } from "./src/wishlists/wishlists.module";
 import { DiscountProductsModule } from "./src/discount-products/discount-products.module";
 import { AuthModule } from "./src/auth/auth.module";
 import { RolesModule } from "./src/roles/roles.module";
+import { SeedModule } from "src/seed/seed.module";
 
 import { User } from "./src/users/users.model";
 import { Discount } from "./src/discounts/discounts.model";
@@ -74,6 +75,7 @@ import { UserRoles } from "./src/roles/user-roles.model";
       sync: { force: true },
     }),
     UsersModule,
+    SeedModule,
     DiscountsModule,
     BrandsModule,
     PetsModule,

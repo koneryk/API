@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Query, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Review } from './reviews.model';
 import { ReviewsService } from './reviews.service';
@@ -6,6 +6,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles-auth.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Отзывы')
 @ApiBearerAuth()
@@ -15,9 +16,16 @@ export class ReviewsController {
 
   @ApiOperation({ summary: 'Добавление отзыва' })
   @ApiResponse({ status: 201, type: Review, description: 'Отзыв добавлен' })
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createReviewDto: CreateReviewDto, @Req() req) {
+  async create(@Body() createReviewDto: CreateReviewDto, @Req() req) {
+    console.log('ReviewsController.create req.user:', req.user);
+    
+    if (!req.user) {
+      throw new HttpException('Пользователь не авторизован', HttpStatus.UNAUTHORIZED);
+    }
     const userId = req.user.id;
+    console.log('Создание отзыва для пользователя:', userId);
     return this.reviewsService.create(createReviewDto, userId);
   }
 

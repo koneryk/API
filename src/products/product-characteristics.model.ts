@@ -21,9 +21,9 @@ export class ProductCharacteristic extends Model<ProductCharacteristic> {
   @Column({ type: DataType.STRING })
   declare value: string;
 
-  @BelongsTo(() => Product)
+  @BelongsTo(() => Product, { as: 'product' })
   product: Product;
 
-  @BelongsTo(() => Characteristic)
+  @BelongsTo(() => Characteristic, { as: 'characteristic' })
   characteristic: Characteristic;
 }

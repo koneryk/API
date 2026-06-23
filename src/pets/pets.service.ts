@@ -53,19 +53,23 @@ export class PetsService {
   }
 
   async findOnePet(id: number): Promise<Pet> {
-    const pet = await this.petModel.findByPk(id, {
-      include: [
-        { model: User },
-        { model: Breed, include: [{ model: Species }] },
-      ],
-    });
-
-    if (!pet) {
-      throw new HttpException('Питомец не найден', HttpStatus.NOT_FOUND);
-    }
-
-    return pet;
+  if (!id || isNaN(id)) {
+    throw new HttpException('Некорректный ID питомца', HttpStatus.BAD_REQUEST);
   }
+
+  const pet = await this.petModel.findByPk(id, {
+    include: [
+      { model: User },
+      { model: Breed, include: [{ model: Species }] },
+    ],
+  });
+
+  if (!pet) {
+    throw new HttpException('Питомец не найден', HttpStatus.NOT_FOUND);
+  }
+
+  return pet;
+}
 
   async updatePet(id: number, updatePetDto: UpdatePetDto): Promise<Pet> {
     const pet = await this.findOnePet(id);

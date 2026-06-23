@@ -73,6 +73,8 @@ export class Order extends Model<Order> {
   @BelongsTo(() => Discount)
   discount: Discount;
 
+   @HasMany(() => OrderItem)
+  orderItems: OrderItem[];
 }
 
 @Table({ tableName: 'order_items', timestamps: false })

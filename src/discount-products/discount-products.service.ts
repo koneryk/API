@@ -13,6 +13,13 @@ export class DiscountProductsService {
   ) {}
 
   async create(createDto: CreateDiscountProductDto): Promise<DiscountProduct> {
+    if (!createDto.discount_id) {
+      throw new HttpException('discount_id обязателен', HttpStatus.BAD_REQUEST);
+    }
+    if (!createDto.product_id) {
+      throw new HttpException('product_id обязателен', HttpStatus.BAD_REQUEST);
+    }
+
     const existing = await this.discountProductModel.findOne({
       where: {
         discount_id: createDto.discount_id,
@@ -29,7 +36,7 @@ export class DiscountProductsService {
       product_id: createDto.product_id,
     };
 
-    return this.discountProductModel.create(data as any); 
+    return this.discountProductModel.create(data as any);
   }
 
   async findAll(): Promise<DiscountProduct[]> {
@@ -42,6 +49,14 @@ export class DiscountProductsService {
   }
 
   async findOne(discountId: number, productId: number): Promise<DiscountProduct> {
+    if (!discountId || !productId) {
+      throw new HttpException('discountId и productId обязательны', HttpStatus.BAD_REQUEST);
+    }
+    
+    if (isNaN(discountId) || isNaN(productId)) {
+      throw new HttpException('discountId и productId должны быть числами', HttpStatus.BAD_REQUEST);
+    }
+
     const item = await this.discountProductModel.findOne({
       where: {
         discount_id: discountId,
@@ -61,6 +76,14 @@ export class DiscountProductsService {
   }
 
   async remove(discountId: number, productId: number): Promise<void> {
+    if (!discountId || !productId) {
+      throw new HttpException('discountId и productId обязательны', HttpStatus.BAD_REQUEST);
+    }
+    
+    if (isNaN(discountId) || isNaN(productId)) {
+      throw new HttpException('discountId и productId должны быть числами', HttpStatus.BAD_REQUEST);
+    }
+
     const item = await this.findOne(discountId, productId);
     await item.destroy();
   }

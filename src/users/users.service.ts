@@ -74,7 +74,53 @@ export class UsersService {
       roleId: role.id,
     } as any);
   }
+async createAdmin(createUserDto: CreateUserDto): Promise<User> {
+  const existingAdmin = await this.userModel.findOne({
+    where: { email: createUserDto.email },
+  });
 
+  if (existingAdmin) {
+    throw new HttpException('Пользователь с таким email уже существует', HttpStatus.BAD_REQUEST);
+  }
+
+  const hashPassword = await bcrypt.hash(createUserDto.password, 5);
+
+  const user = await this.userModel.create({
+    email: createUserDto.email,
+    password_hash: hashPassword,
+    first_name: createUserDto.first_name || 'Admin',
+    last_name: createUserDto.last_name || 'System',
+    phone: createUserDto.phone || '',
+    address: createUserDto.address || '',
+    is_active: true,
+  } as any);
+
+  const adminRole = await this.roleModel.findOne({
+    where: { value: 'ADMIN' },
+  });
+
+  if (!adminRole) {
+    throw new HttpException('Роль ADMIN не найдена в системе', HttpStatus.NOT_FOUND);
+  }
+
+  await this.userRolesModel.create({
+    userId: user.id,
+    roleId: adminRole.id,
+  } as any);
+
+  const customerRole = await this.roleModel.findOne({
+    where: { value: 'customer' },
+  });
+
+  if (customerRole) {
+    await this.userRolesModel.create({
+      userId: user.id,
+      roleId: customerRole.id,
+    } as any);
+  }
+
+  return user;
+}
   async removeRole(userId: number, roleValue: string): Promise<void> {
     const user = await this.userModel.findByPk(userId);
     if (!user) {
