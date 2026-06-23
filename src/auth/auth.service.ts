@@ -1,8 +1,8 @@
-import {
+import { 
   HttpException,
   HttpStatus,
   Injectable,
-  UnauthorizedException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
@@ -32,14 +32,19 @@ export class AuthService {
     }
 
     const user = await this.userService.createUser(userDto);
+    
+    await this.userService.assignRole(user.id, 'customer');
+    
     return this.generateToken(user);
   }
 
-  generateToken(user: User) {
+  async generateToken(user: User) {
+    const roles = user.roles?.map(role => role.value) || ['customer'];
+    
     const payload = {
       email: user.email,
       id: user.id,
-      roles: user.role || 'customer'
+      roles: roles,
     };
 
     return {
@@ -49,7 +54,6 @@ export class AuthService {
 
   async validateUser(userDto: CreateUserDto): Promise<User> {
     const user = await this.userService.getUsersByEmail(userDto.email);
-
     if (!user) {
       throw new UnauthorizedException({ message: 'Неверный пароль или email' });
     }

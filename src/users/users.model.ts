@@ -50,9 +50,9 @@ export class User extends Model<User, UserCreationAttr> {
   @Column({ type: DataType.STRING })
   declare phone: string;
 
-  @ApiProperty({ example: 'customer', description: 'Роль' })
-  @Column({ type: DataType.STRING, defaultValue: 'customer' })
-  declare role: string;
+  //@ApiProperty({ example: 'customer', description: 'Роль' })
+  //@Column({ type: DataType.STRING, defaultValue: 'customer' })
+  //declare role: string;
 
   @ApiProperty({ example: 'г. Москва, ул. Ленина, д.10', description: 'Адрес' })
   @Column({ type: DataType.TEXT })
