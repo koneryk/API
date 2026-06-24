@@ -100,7 +100,7 @@ export class InventoryService {
     });
 
     if (newQuantity <= inventory.min_stock && newQuantity > 0) {
-      this.logger.warn(`⚠️ Низкий остаток товара ${productId}! Осталось: ${newQuantity} шт. (мин: ${inventory.min_stock})`);
+      this.logger.warn(`Низкий остаток товара ${productId}! Осталось: ${newQuantity} шт. (мин: ${inventory.min_stock})`);
     }
 
     if (newQuantity === 0) {

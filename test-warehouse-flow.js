@@ -24,7 +24,7 @@ const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
   success: (msg) => console.log(`${msg}`.green),
   error: (msg) => console.log(`${msg}`.red),
-  warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
+  warn: (msg) => console.log(`${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
 
@@ -113,7 +113,7 @@ async function checkInventory(productId) {
     return res.data;
   } catch (error) {
     if (error.response?.status === 404) {
-      log.warn(`⚠️ Инвентаризация для товара ${productId} не найдена`);
+      log.warn(`Инвентаризация для товара ${productId} не найдена`);
       return null;
     }
     log.error(`Ошибка проверки инвентаризации: ${error.message}`);
@@ -134,7 +134,7 @@ async function createInventory(productId, quantity = 100) {
     return res.data;
   } catch (error) {
     if (error.response?.status === 400) {
-      log.warn('⚠️ Инвентаризация уже существует');
+      log.warn('Инвентаризация уже существует');
       return await checkInventory(productId);
     }
     log.error(`Ошибка создания инвентаризации: ${error.message}`);
@@ -182,7 +182,7 @@ async function checkCartAvailability() {
     if (res.data.available) {
       log.success('Все товары в наличии');
     } else {
-      log.warn('⚠️ Некоторые товары отсутствуют на складе');
+      log.warn('Некоторые товары отсутствуют на складе');
     }
     console.log('📊 Результат:');
     res.data.items.forEach((item, idx) => {
@@ -204,7 +204,7 @@ async function createOrder() {
     // Получаем корзину
     const cart = await getCart();
     if (!cart || cart.length === 0) {
-      log.warn('⚠️ Корзина пуста!');
+      log.warn('Корзина пуста!');
       return null;
     }
 

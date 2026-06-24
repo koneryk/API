@@ -21,7 +21,7 @@ const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
   success: (msg) => console.log(`${msg}`.green),
   error: (msg) => console.log(`${msg}`.red),
-  warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
+  warn: (msg) => console.log(`${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
 
@@ -237,7 +237,7 @@ async function checkStocks() {
         console.log(`   ... и еще ${res.data.length - 10} записей`);
       }
     } else {
-      log.warn('⚠️ Остатков нет!');
+      log.warn('Остатков нет!');
     }
     return true;
   } catch (error) {
@@ -296,7 +296,7 @@ async function checkLowStock() {
       return true;
     }
     
-    log.warn(`⚠️ Найдено ${res.data.length} товаров с низким остатком:`);
+    log.warn(`Найдено ${res.data.length} товаров с низким остатком:`);
     res.data.forEach((stock, index) => {
       const repoName = stock.repository?.name || 'Неизвестный склад';
       const productName = stock.product?.name || 'Неизвестный товар';
@@ -351,7 +351,7 @@ async function moveStock() {
     return true;
   } catch (error) {
     if (error.response?.status === 400) {
-      log.warn(`⚠️ Недостаточно товара для перемещения`);
+      log.warn(`Недостаточно товара для перемещения`);
     } else {
       log.error(`Ошибка перемещения: ${error.message}`);
     }
@@ -445,7 +445,7 @@ async function seedRepository() {
 
     // 6. Если остатков нет — принудительное заполнение
     if (IDs.stockIds.length === 0) {
-      log.warn('⚠️ Остатков нет! Запускаю принудительное заполнение...');
+      log.warn('Остатков нет! Запускаю принудительное заполнение...');
       await forceSeedStocks();
       await delay(200);
     }
@@ -477,14 +477,14 @@ async function seedRepository() {
     console.log(`  Остатков:          ${IDs.stockIds.length} шт`);
     console.log(`  Товаров:           ${IDs.productIds.length} шт (IDs: ${IDs.productIds.join(', ') || '❌'})`);
     console.log(`  Проверка наличия:  Выполнена`);
-    console.log(`  ⚠️ Низкий остаток:    Проверен`);
+    console.log(`  Низкий остаток:    Проверен`);
     console.log(`  🔄 Перемещение:       Выполнено`);
 
     console.log();
     if (IDs.stockIds.length > 0) {
       console.log('СКЛАД УСПЕШНО ЗАПОЛНЕН!'.brightGreen);
     } else {
-      console.log('⚠️ НЕ УДАЛОСЬ СОЗДАТЬ ОСТАТКИ'.brightYellow);
+      console.log('НЕ УДАЛОСЬ СОЗДАТЬ ОСТАТКИ'.brightYellow);
       console.log('💡 Проверьте:');
       console.log('   1. Есть ли склады в таблице repositories');
       console.log('   2. Есть ли товары в таблице products');

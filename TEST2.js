@@ -34,7 +34,7 @@ const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
   success: (msg) => console.log(`${msg}`.green),
   error: (msg) => console.log(`${msg}`.red),
-  warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
+  warn: (msg) => console.log(`${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
 
