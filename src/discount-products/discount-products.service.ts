@@ -48,7 +48,7 @@ export class DiscountProductsService {
     });
   }
 
-  async findOne(discountId: number, productId: number): Promise<DiscountProduct> {
+  async findOne(discountId: DiscountProduct["discount_id"], productId: DiscountProduct["product_id"]): Promise<DiscountProduct> {
     if (!discountId || !productId) {
       throw new HttpException('discountId и productId обязательны', HttpStatus.BAD_REQUEST);
     }

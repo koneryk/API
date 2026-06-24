@@ -26,7 +26,7 @@ export class CharacteristicsService {
     });
   }
 
-  async findOne(id: number): Promise<Characteristic> {
+  async findOne(id: Characteristic["id"]): Promise<Characteristic> {
     const characteristic = await this.characteristicModel.findByPk(id, {
       include: [{ model: ProductCharacteristic }],
     });
@@ -38,13 +38,13 @@ export class CharacteristicsService {
     return characteristic;
   }
 
-  async update(id: number, updateCharacteristicDto: UpdateCharacteristicDto): Promise<Characteristic> {
+  async update(id: Characteristic["id"], updateCharacteristicDto: UpdateCharacteristicDto): Promise<Characteristic> {
     const characteristic = await this.findOne(id);
     await characteristic.update(updateCharacteristicDto);
     return characteristic;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Characteristic["id"]): Promise<void> {
     const characteristic = await this.findOne(id);
     await characteristic.destroy();
   }

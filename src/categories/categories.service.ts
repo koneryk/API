@@ -42,7 +42,7 @@ export class CategoriesService {
     });
   }
 
-  async findChildren(parentId: number): Promise<Category[]> {
+  async findChildren(parentId: Category["parent_id"]): Promise<Category[]> {
     return this.categoryModel.findAll({
       where: { parent_id: parentId } as any,
       include: [{ model: Product }],
@@ -66,7 +66,7 @@ export class CategoriesService {
   }
 
   async update(
-    id: number,
+    id: Category["id"],
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
     const category = await this.findOne(id);

@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Order, OrderItem, OrderStatus } from './orders.model';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -10,29 +10,62 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { User } from '../users/users.model';
 import { Discount } from '../discounts/discounts.model';
 import { Product } from '../products/products.model';
+import { InventoryService } from '../inventory/inventory.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
-      @InjectModel(Order)
-      private orderModel: typeof Order,
-      @InjectModel(OrderItem)
-      private orderItemModel: typeof OrderItem,
-      @InjectModel(OrderStatus)
-      private orderStatusModel: typeof OrderStatus,
-      @InjectModel(Product)
-      private productModel: typeof Product,
+    @InjectModel(Order)
+    private orderModel: typeof Order,
+    @InjectModel(OrderItem)
+    private orderItemModel: typeof OrderItem,
+    @InjectModel(OrderStatus)
+    private orderStatusModel: typeof OrderStatus,
+    @InjectModel(Product)
+    private productModel: typeof Product,
+    @Inject(forwardRef(() => InventoryService))
+    private inventoryService: InventoryService,
   ) {}
 
-
   async create(createOrderDto: CreateOrderDto, userId: number): Promise<Order> {
-  console.log('Создание заказа:', createOrderDto);
+  console.log('📦 Создание заказа:', createOrderDto);
 
   if (!createOrderDto.shipping_address) {
     throw new HttpException('Адрес доставки обязателен', HttpStatus.BAD_REQUEST);
   }
   if (!createOrderDto.items || createOrderDto.items.length === 0) {
     throw new HttpException('Заказ должен содержать товары', HttpStatus.BAD_REQUEST);
+  }
+
+  for (const item of createOrderDto.items) {
+    const product = await this.productModel.findByPk(item.product_id);
+    if (!product) {
+      throw new HttpException(`Товар с ID ${item.product_id} не найден`, HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      const availability = await this.inventoryService.checkAvailability(
+        item.product_id,
+        item.quantity
+      );
+      
+      if (!availability.available) {
+        throw new HttpException(
+          `Недостаточно товара "${product.name}". Доступно: ${availability.currentStock}, запрошено: ${item.quantity}`,
+          HttpStatus.BAD_REQUEST
+        );
+      }
+
+      await this.inventoryService.reduceStock(item.product_id, item.quantity);
+      console.log(`✅ Зарезервировано ${item.quantity} шт. товара ${product.name}`);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      console.error(`❌ Ошибка проверки инвентаризации: ${error.message}`);
+      throw new HttpException(
+        `Ошибка проверки наличия товара: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   const orderData = {
@@ -54,6 +87,7 @@ export class OrdersService {
       if (!product) {
         throw new HttpException(`Товар с ID ${item.product_id} не найден`, HttpStatus.NOT_FOUND);
       }
+      
       const itemData = {
         order_id: order.id,
         product_id: item.product_id,
@@ -64,10 +98,12 @@ export class OrdersService {
       totalAmount += itemData.price * itemData.quantity;
     }
   }
+
   await order.update({ total_amount: totalAmount });
 
   return this.findOne(order.id);
 }
+
 
   async findAll(): Promise<Order[]> {
     return this.orderModel.findAll({
@@ -101,27 +137,27 @@ export class OrdersService {
   }
 
   async findOne(id: number): Promise<Order> {
-  if (!id || isNaN(id)) {
-    throw new HttpException('Некорректный ID заказа', HttpStatus.BAD_REQUEST);
-  }
-  const order = await this.orderModel.findByPk(id, {
-    include: [
-      { model: User },
-      { model: OrderStatus, as: 'status' },
-      { model: Discount },
-      {
-        model: OrderItem,
-        include: [{ model: Product }],
-      },
-    ],
-  });
+    if (!id || isNaN(id)) {
+      throw new HttpException('Некорректный ID заказа', HttpStatus.BAD_REQUEST);
+    }
+    const order = await this.orderModel.findByPk(id, {
+      include: [
+        { model: User },
+        { model: OrderStatus, as: 'status' },
+        { model: Discount },
+        {
+          model: OrderItem,
+          include: [{ model: Product }],
+        },
+      ],
+    });
 
-  if (!order) {
-    throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
-  }
+    if (!order) {
+      throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
+    }
 
-  return order;
-}
+    return order;
+  }
 
   async findByOrderNumber(orderNumber: string): Promise<Order> {
     const order = await this.orderModel.findOne({
@@ -136,7 +172,6 @@ export class OrdersService {
     if (!order) {
       throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
     }
-
     return order;
   }
 
@@ -155,7 +190,20 @@ export class OrdersService {
 
   async cancel(id: number): Promise<Order> {
     const order = await this.findOne(id);
-    await order.update({ status_id: 6 });
+    try {
+      const orderItems = await this.orderItemModel.findAll({
+        where: { order_id: id },
+      });
+      
+      for (const item of orderItems) {
+        await this.inventoryService.addStock(item.product_id, item.quantity);
+        console.log(`✅ Возвращено ${item.quantity} шт. товара ${item.product_id} на склад`);
+      }
+    } catch (error) {
+      console.error(`❌ Ошибка возврата товаров: ${error.message}`);
+    }
+    
+    await order.update({ status_id: 5 });
     return this.findOne(id);
   }
 
@@ -163,7 +211,6 @@ export class OrdersService {
     const order = await this.findOne(id);
     await order.destroy();
   }
-
 
   async createOrderItem(createOrderItemDto: CreateOrderItemDto): Promise<OrderItem> {
     const order = await this.orderModel.findByPk(createOrderItemDto.order_id);
@@ -226,7 +273,6 @@ export class OrdersService {
     const item = await this.findOneOrderItem(id);
     await item.destroy();
   }
-
 
   async createOrderStatus(createOrderStatusDto: CreateOrderStatusDto): Promise<OrderStatus> {
     const statusData = {

@@ -27,7 +27,7 @@ export class BrandsService {
     });
   }
 
-  async findOne(id: number): Promise<Brand> {
+  async findOne(id: Brand["id"]): Promise<Brand> {
     const brand = await this.brandModel.findByPk(id, {
       include: [{ model: Product }],
     });
@@ -39,13 +39,13 @@ export class BrandsService {
     return brand;
   }
 
-  async update(id: number, updateBrandDto: UpdateBrandDto): Promise<Brand> {
+  async update(id: Brand["id"], updateBrandDto: UpdateBrandDto): Promise<Brand> {
     const brand = await this.findOne(id);
     await brand.update(updateBrandDto);
     return brand;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Brand["id"]): Promise<void> {
     const brand = await this.findOne(id);
     await brand.destroy();
   }

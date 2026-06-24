@@ -34,10 +34,6 @@ export class Product extends Model<Product> {
   @Column({ type: DataType.DECIMAL(10,2), allowNull: false })
   declare price: number;
 
-  @ApiProperty({ example: '50', description: 'Количество на складе' })
-  @Column({ type: DataType.INTEGER, defaultValue: 0 })
-  declare stock: number;
-
   @ApiProperty({ example: true, description: 'Активен ли товар' })
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   declare is_active: boolean;

@@ -171,7 +171,8 @@ export class OrdersController {
   @ApiOperation({ summary: 'Обновление позиции' })
   @ApiResponse({ status: 200, type: OrderItem, description: 'Позиция обновлена' })
   @Put('items/:id')
-  updateOrderItem(@Param('id') id: string, @Body() updateOrderItemDto: UpdateOrderItemDto) {
+  updateOrderItem(@Param('id') id: string, 
+  @Body() updateOrderItemDto: UpdateOrderItemDto) {
     return this.ordersService.updateOrderItem(+id, updateOrderItemDto);
   }
 

@@ -36,30 +36,21 @@ export class AuthService {
     }
 
     const user = await this.userService.createUser(userDto);
-    
     const isAdmin = userDto.email.toLowerCase().includes('admin');
     const roleValue = isAdmin ? 'ADMIN' : 'customer';
-    
-    console.log(`Назначение роли "${roleValue}" пользователю ${userDto.email}`);
-    
     await this.userService.assignRole(user.id, roleValue);
-    
     const userWithRoles = await this.userModel.findByPk(user.id, {
       include: [{ model: Role }],
     });
-    
     if (!userWithRoles) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
-    
     return this.generateToken(userWithRoles);
   }
 
   async generateToken(user: User) {
     console.log(`generateToken для: ${user.email} (ID: ${user.id})`);
-    
     let roles: string[] = [];
-    
     try {
       const [results] = await this.roleModel.sequelize?.query(`
         SELECT r.value 
@@ -67,7 +58,6 @@ export class AuthService {
         JOIN user_roles ur ON ur."roleId" = r.id
         WHERE ur."userId" = ${user.id}
       `) || [];
-      
       if (results && results.length > 0) {
         roles = results.map((r: any) => r.value);
         console.log(`Загружено через SQL: ${roles.join(', ')}`);
@@ -76,7 +66,6 @@ export class AuthService {
       }
     } catch (error) {
       console.log(`SQL ошибка: ${error.message}`);
-      
       try {
         const userWithRoles = await this.userModel.findByPk(user.id, {
           include: [{ model: Role }],
@@ -87,8 +76,6 @@ export class AuthService {
         console.log(`Sequelize ошибка: ${e.message}`);
       }
     }
-    
-    console.log(`Итоговые роли для токена: ${roles.join(', ') || 'ПУСТО'}`);
     
     const payload = {
       email: user.email,

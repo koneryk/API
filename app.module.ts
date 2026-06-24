@@ -17,6 +17,8 @@ import { DiscountProductsModule } from "./src/discount-products/discount-product
 import { AuthModule } from "./src/auth/auth.module";
 import { RolesModule } from "./src/roles/roles.module";
 import { SeedModule } from "src/seed/seed.module";
+import { CartModule } from "src/cart/cart.module";
+import { InventoryModule } from "src/inventory/inventory.module"
 
 import { User } from "./src/users/users.model";
 import { Discount } from "./src/discounts/discounts.model";
@@ -35,6 +37,9 @@ import { Wishlist } from "./src/wishlists/wishlists.model";
 import { DiscountProduct } from "./src/discount-products/discount-products.model";
 import { Role } from "./src/roles/roles.model";
 import { UserRoles } from "./src/roles/user-roles.model";
+import { CartItem } from './src/cart/cart.model';
+import { RepositoryModule } from "src/repository/repository.module";
+import { ProductInventory } from "src/inventory/inventory.model";
 
 @Module({
   imports: [
@@ -56,6 +61,7 @@ import { UserRoles } from "./src/roles/user-roles.model";
         Species,
         Breed,
         Pet,
+        ProductInventory,
         Category,
         Product,
         OrderStatus,
@@ -68,6 +74,7 @@ import { UserRoles } from "./src/roles/user-roles.model";
         Wishlist,
         DiscountProduct,
         Role,
+        CartItem,
         UserRoles,
       ],
       autoLoadModels: true,
@@ -78,6 +85,9 @@ import { UserRoles } from "./src/roles/user-roles.model";
     SeedModule,
     DiscountsModule,
     BrandsModule,
+    CartModule,
+    RepositoryModule, 
+    InventoryModule,
     PetsModule,
     CategoriesModule,
     ProductsModule,

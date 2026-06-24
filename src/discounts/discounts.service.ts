@@ -59,7 +59,7 @@ async create(createDiscountDto: CreateDiscountDto): Promise<Discount> {
     });
   }
 
-  async findOne(id: number): Promise<Discount> {
+  async findOne(id: Discount["id"]): Promise<Discount> {
     const discount = await this.discountModel.findByPk(id, {
       include: [{ model: Product, through: { attributes: [] } }],
     });
@@ -71,7 +71,7 @@ async create(createDiscountDto: CreateDiscountDto): Promise<Discount> {
     return discount;
   }
 
-  async findByCode(code: string): Promise<Discount> {
+  async findByCode(code: Discount["code"]): Promise<Discount> {
     const discount = await this.discountModel.findOne({
       where: { code },
       include: [{ model: Product, through: { attributes: [] } }],
@@ -84,13 +84,13 @@ async create(createDiscountDto: CreateDiscountDto): Promise<Discount> {
     return discount;
   }
 
-  async update(id: number, updateDiscountDto: UpdateDiscountDto): Promise<Discount> {
+  async update(id: Discount["id"], updateDiscountDto: UpdateDiscountDto): Promise<Discount> {
     const discount = await this.findOne(id);
     await discount.update(updateDiscountDto);
     return discount;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Discount["id"]): Promise<void> {
     const discount = await this.findOne(id);
     await discount.destroy();
   }
