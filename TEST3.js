@@ -19,8 +19,8 @@ const IDs = {
 
 const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
-  success: (msg) => console.log(`✅ ${msg}`.green),
-  error: (msg) => console.log(`❌ ${msg}`.red),
+  success: (msg) => console.log(`${msg}`.green),
+  error: (msg) => console.log(`${msg}`.red),
   warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
@@ -268,8 +268,8 @@ async function checkAvailability() {
     
     log.success(`Проверка товара ID: ${productId}`);
     console.log(`   Доступно: ${res.data.totalStock} шт.`);
-    console.log(`   ✅ Запрошено: ${quantity} шт.`);
-    console.log(`   ${res.data.available ? '✅ Достаточно' : '❌ Недостаточно'}`);
+    console.log(`   Запрошено: ${quantity} шт.`);
+    console.log(`   ${res.data.available ? 'Достаточно' : 'Недостаточно'}`);
     
     if (res.data.repositories && res.data.repositories.length > 0) {
       console.log('\n   📊 Распределение по складам:');
@@ -292,7 +292,7 @@ async function checkLowStock() {
     const res = await api('get', '/repository/low-stock', null, ADMIN_TOKEN);
     
     if (res.data.length === 0) {
-      log.success('✅ Товары с низким остатком отсутствуют');
+      log.success('Товары с низким остатком отсутствуют');
       return true;
     }
     
@@ -344,7 +344,7 @@ async function moveStock() {
 
     const res = await api('post', '/repository/move', data, ADMIN_TOKEN);
     
-    log.success(`✅ Товар перемещен: ${quantity} шт.`);
+    log.success(`Товар перемещен: ${quantity} шт.`);
     console.log(`   Со склада ID: ${fromRepoId} на склад ID: ${toRepoId}`);
     console.log(`   📊 Остаток на складе-источнике: ${res.data.from.quantity} шт.`);
     console.log(`   📊 Остаток на складе-назначении: ${res.data.to.quantity} шт.`);
@@ -392,7 +392,7 @@ async function forceSeedStocks() {
         const res = await api('post', '/repository/stocks', data, ADMIN_TOKEN);
         IDs.stockIds.push(res.data.id);
         totalCreated++;
-        log.success(`✅ Принудительно создан остаток: товар ${productId} на складе ${repositoryId} (${quantity} шт.)`);
+        log.success(`Принудительно создан остаток: товар ${productId} на складе ${repositoryId} (${quantity} шт.)`);
       } catch (error) {
         if (error.response?.status === 400) {
           log.warn(`Остаток для товара ${productId} на складе ${repositoryId} уже существует`);
@@ -422,7 +422,7 @@ async function seedRepository() {
     // 1. Логин
     const loggedIn = await login();
     if (!loggedIn) {
-      log.error('❌ Не удалось войти в систему');
+      log.error('Не удалось войти в систему');
       return;
     }
     await delay(300);
@@ -476,13 +476,13 @@ async function seedRepository() {
     console.log(`  🏭 Складов:           ${IDs.repositoryIds.length} шт (IDs: ${IDs.repositoryIds.join(', ') || '❌'})`);
     console.log(`  Остатков:          ${IDs.stockIds.length} шт`);
     console.log(`  Товаров:           ${IDs.productIds.length} шт (IDs: ${IDs.productIds.join(', ') || '❌'})`);
-    console.log(`  ✅ Проверка наличия:  Выполнена`);
+    console.log(`  Проверка наличия:  Выполнена`);
     console.log(`  ⚠️ Низкий остаток:    Проверен`);
     console.log(`  🔄 Перемещение:       Выполнено`);
 
     console.log();
     if (IDs.stockIds.length > 0) {
-      console.log('✅ СКЛАД УСПЕШНО ЗАПОЛНЕН!'.brightGreen);
+      console.log('СКЛАД УСПЕШНО ЗАПОЛНЕН!'.brightGreen);
     } else {
       console.log('⚠️ НЕ УДАЛОСЬ СОЗДАТЬ ОСТАТКИ'.brightYellow);
       console.log('💡 Проверьте:');
@@ -497,7 +497,7 @@ async function seedRepository() {
     console.log('   SELECT * FROM repository_stocks WHERE quantity < min_stock;'.gray);
 
   } catch (error) {
-    console.error('❌ Критическая ошибка:', error.message);
+    console.error('Критическая ошибка:', error.message);
     console.error(error);
   }
 }

@@ -10,14 +10,14 @@ export class WishlistsService {
     private wishlistModel: typeof Wishlist,
   ) {}
 
-  async findByUser(userId: number): Promise<Wishlist[]> {
+  async findByUser(userId: Wishlist["user_id"]): Promise<Wishlist[]> {
     return this.wishlistModel.findAll({
       where: { user_id: userId },
       include: [{ model: Product }],
     });
   }
 
-  async add(userId: number, productId: number): Promise<Wishlist> {
+  async add(userId: Wishlist["user_id"], productId: Wishlist["product_id"]): Promise<Wishlist> {
     const existing = await this.wishlistModel.findOne({
       where: { user_id: userId, product_id: productId },
     });
@@ -34,7 +34,7 @@ export class WishlistsService {
     return wishlistItem;
   }
 
-  async remove(userId: number, productId: number): Promise<void> {
+  async remove(userId: Wishlist["user_id"], productId: Wishlist["product_id"]): Promise<void> {
     const item = await this.wishlistModel.findOne({
       where: { user_id: userId, product_id: productId },
     });
@@ -46,7 +46,7 @@ export class WishlistsService {
     await item.destroy();
   }
 
-  async check(userId: number, productId: number): Promise<{ inWishlist: boolean }> {
+  async check(userId: Wishlist["user_id"], productId: Wishlist["product_id"]): Promise<{ inWishlist: boolean }> {
     const item = await this.wishlistModel.findOne({
       where: { user_id: userId, product_id: productId },
     });
@@ -54,7 +54,7 @@ export class WishlistsService {
     return { inWishlist: !!item };
   }
 
-  async clear(userId: number): Promise<void> {
+  async clear(userId: Wishlist["user_id"]): Promise<void> {
     await this.wishlistModel.destroy({
       where: { user_id: userId },
     });

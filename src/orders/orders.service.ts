@@ -27,8 +27,8 @@ export class OrdersService {
     private inventoryService: InventoryService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto, userId: number): Promise<Order> {
-  console.log('📦 Создание заказа:', createOrderDto);
+  async create(createOrderDto: CreateOrderDto, userId: Order["user_id"]): Promise<Order> {
+  console.log('Создание заказа:', createOrderDto);
 
   if (!createOrderDto.shipping_address) {
     throw new HttpException('Адрес доставки обязателен', HttpStatus.BAD_REQUEST);
@@ -57,10 +57,10 @@ export class OrdersService {
       }
 
       await this.inventoryService.reduceStock(item.product_id, item.quantity);
-      console.log(`✅ Зарезервировано ${item.quantity} шт. товара ${product.name}`);
+      console.log(`Зарезервировано ${item.quantity} шт. товара ${product.name}`);
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      console.error(`❌ Ошибка проверки инвентаризации: ${error.message}`);
+      console.error(`Ошибка проверки инвентаризации: ${error.message}`);
       throw new HttpException(
         `Ошибка проверки наличия товара: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
@@ -116,7 +116,7 @@ export class OrdersService {
     });
   }
 
-  async findByUser(userId: number): Promise<Order[]> {
+  async findByUser(userId: Order["user_id"]): Promise<Order[]> {
     return this.orderModel.findAll({
       where: { user_id: userId },
       include: [
@@ -126,7 +126,7 @@ export class OrdersService {
     });
   }
 
-  async findByStatus(statusId: number): Promise<Order[]> {
+  async findByStatus(statusId: Order["status_id"]): Promise<Order[]> {
     return this.orderModel.findAll({
       where: { status_id: statusId },
       include: [
@@ -136,7 +136,7 @@ export class OrdersService {
     });
   }
 
-  async findOne(id: number): Promise<Order> {
+  async findOne(id: Order["id"]): Promise<Order> {
     if (!id || isNaN(id)) {
       throw new HttpException('Некорректный ID заказа', HttpStatus.BAD_REQUEST);
     }
@@ -159,7 +159,7 @@ export class OrdersService {
     return order;
   }
 
-  async findByOrderNumber(orderNumber: string): Promise<Order> {
+  async findByOrderNumber(orderNumber: Order["order_number"]): Promise<Order> {
     const order = await this.orderModel.findOne({
       where: { order_number: orderNumber },
       include: [
@@ -175,20 +175,20 @@ export class OrdersService {
     return order;
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
+  async update(id: Order["id"], updateOrderDto: UpdateOrderDto): Promise<Order> {
     const order = await this.findOne(id);
     const { items, ...updateData } = updateOrderDto;
     await order.update(updateData);
     return this.findOne(id);
   }
 
-  async updateStatus(id: number, statusId: number): Promise<Order> {
+  async updateStatus(id: OrderStatus["id"], statusId: Order["status_id"]): Promise<Order> {
     const order = await this.findOne(id);
     await order.update({ status_id: statusId });
     return this.findOne(id);
   }
 
-  async cancel(id: number): Promise<Order> {
+  async cancel(id: Order["id"]): Promise<Order> {
     const order = await this.findOne(id);
     try {
       const orderItems = await this.orderItemModel.findAll({
@@ -197,17 +197,17 @@ export class OrdersService {
       
       for (const item of orderItems) {
         await this.inventoryService.addStock(item.product_id, item.quantity);
-        console.log(`✅ Возвращено ${item.quantity} шт. товара ${item.product_id} на склад`);
+        console.log(`Возвращено ${item.quantity} шт. товара ${item.product_id} на склад`);
       }
     } catch (error) {
-      console.error(`❌ Ошибка возврата товаров: ${error.message}`);
+      console.error(`Ошибка возврата товаров: ${error.message}`);
     }
     
     await order.update({ status_id: 5 });
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Order["id"]): Promise<void> {
     const order = await this.findOne(id);
     await order.destroy();
   }
@@ -236,7 +236,7 @@ export class OrdersService {
     });
   }
 
-  async findByOrderOrderItems(orderId: number): Promise<OrderItem[]> {
+  async findByOrderOrderItems(orderId: OrderItem["order_id"]): Promise<OrderItem[]> {
     const order = await this.orderModel.findByPk(orderId);
     if (!order) {
       throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
@@ -248,7 +248,7 @@ export class OrdersService {
     });
   }
 
-  async findOneOrderItem(id: number): Promise<OrderItem> {
+  async findOneOrderItem(id: OrderItem["id"]): Promise<OrderItem> {
     const item = await this.orderItemModel.findByPk(id, {
       include: [
         { model: Order },
@@ -263,13 +263,13 @@ export class OrdersService {
     return item;
   }
 
-  async updateOrderItem(id: number, updateOrderItemDto: UpdateOrderItemDto): Promise<OrderItem> {
+  async updateOrderItem(id: OrderItem["id"], updateOrderItemDto: UpdateOrderItemDto): Promise<OrderItem> {
     const item = await this.findOneOrderItem(id);
     await item.update(updateOrderItemDto);
     return this.findOneOrderItem(id);
   }
 
-  async removeOrderItem(id: number): Promise<void> {
+  async removeOrderItem(id: OrderItem["id"]): Promise<void> {
     const item = await this.findOneOrderItem(id);
     await item.destroy();
   }
@@ -286,7 +286,7 @@ export class OrdersService {
     return this.orderStatusModel.findAll();
   }
 
-  async findOneOrderStatus(id: number): Promise<OrderStatus> {
+  async findOneOrderStatus(id: OrderStatus["id"]): Promise<OrderStatus> {
     const status = await this.orderStatusModel.findByPk(id, {
       include: [{ model: Order }],
     });
@@ -298,13 +298,13 @@ export class OrdersService {
     return status;
   }
 
-  async updateOrderStatus(id: number, updateOrderStatusDto: UpdateOrderStatusDto): Promise<OrderStatus> {
+  async updateOrderStatus(id: OrderStatus["id"], updateOrderStatusDto: UpdateOrderStatusDto): Promise<OrderStatus> {
     const status = await this.findOneOrderStatus(id);
     await status.update(updateOrderStatusDto);
     return this.findOneOrderStatus(id);
   }
 
-  async removeOrderStatus(id: number): Promise<void> {
+  async removeOrderStatus(id: OrderStatus["id"]): Promise<void> {
     const status = await this.findOneOrderStatus(id);
     await status.destroy();
   }

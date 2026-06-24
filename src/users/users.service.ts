@@ -41,7 +41,7 @@ export class UsersService {
     return user;
   }
 
-  async assignRole(userId: number, roleValue: string): Promise<void> {
+  async assignRole(userId: UserRoles["userId"], roleValue: Role["value"]): Promise<void> {
     const user = await this.userModel.findByPk(userId);
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
@@ -121,7 +121,7 @@ async createAdmin(createUserDto: CreateUserDto): Promise<User> {
 
   return user;
 }
-  async removeRole(userId: number, roleValue: string): Promise<void> {
+  async removeRole(userId: UserRoles["userId"], roleValue: Role["value"]): Promise<void> {
     const user = await this.userModel.findByPk(userId);
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
@@ -150,7 +150,7 @@ async createAdmin(createUserDto: CreateUserDto): Promise<User> {
     }
   }
 
-  async getUserRoles(userId: number): Promise<Role[]> {
+  async getUserRoles(userId: UserRoles["userId"]): Promise<Role[]> {
     const user = await this.userModel.findByPk(userId, {
       include: [{ model: Role }]
     });
@@ -173,7 +173,7 @@ async createAdmin(createUserDto: CreateUserDto): Promise<User> {
     });
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: User["id"]): Promise<User> {
     const user = await this.userModel.findByPk(id, {
       include: [
         { model: Pet },
@@ -190,7 +190,7 @@ async createAdmin(createUserDto: CreateUserDto): Promise<User> {
     return user;
   }
 
-  async getUsersByEmail(email: string): Promise<User | null> {
+  async getUsersByEmail(email: User["email"]): Promise<User | null> {
     const user = await this.userModel.findOne({
       where: { email },
       include: [
@@ -204,13 +204,13 @@ async createAdmin(createUserDto: CreateUserDto): Promise<User> {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: User["id"], updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
     await user.update(updateUserDto);
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: User["id"]): Promise<void> {
     const user = await this.findOne(id);
     await user.destroy();
   }

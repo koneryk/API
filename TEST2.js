@@ -32,8 +32,8 @@ const IDs = {
 
 const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
-  success: (msg) => console.log(`✅ ${msg}`.green),
-  error: (msg) => console.log(`❌ ${msg}`.red),
+  success: (msg) => console.log(`${msg}`.green),
+  error: (msg) => console.log(`${msg}`.red),
   warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
@@ -166,7 +166,7 @@ async function createBrands() {
 // ==================== ТОВАРЫ ====================
 
 async function createProducts() {
-  log.info('📦 Создание 5 товаров...');
+  log.info('Создание 5 товаров...');
   const products = [
     {
       sku: 'RC-001',
@@ -505,7 +505,7 @@ async function createRepositories() {
 // ==================== ИНВЕНТАРИЗАЦИЯ ====================
 
 async function createInventory() {
-  log.info('📦 Создание инвентаризации для товаров...');
+  log.info('Создание инвентаризации для товаров...');
   
   for (const productId of IDs.productIds) {
     const quantity = Math.floor(Math.random() * 190) + 10;
@@ -539,7 +539,7 @@ async function createInventory() {
 // ==================== ОСТАТКИ НА СКЛАДАХ ====================
 
 async function createRepositoryStocks() {
-  log.info('📦 Создание остатков на складах...');
+  log.info('Создание остатков на складах...');
   
   let totalCreated = 0;
   for (const productId of IDs.productIds) {
@@ -655,7 +655,7 @@ async function createOrderStatus() {
 // ==================== ЗАКАЗЫ ====================
 
 async function createOrders() {
-  log.info('📦 Создание 5 заказов...');
+  log.info('Создание 5 заказов...');
   const addresses = [
     'г. Москва, ул. Ленина, д.1',
     'г. Москва, ул. Пушкина, д.2',
@@ -701,7 +701,7 @@ async function seedAll() {
   console.log('╔══════════════════════════════════════════════════╗'.cyan);
   console.log('║        🌱 ПОЛНОЕ ЗАПОЛНЕНИЕ БАЗЫ ДАННЫХ       ║'.cyan);
   console.log('║           🐶 ЗООМАГАЗИН 🐱                     ║'.cyan);
-  console.log('║        🏭 + 📦 + 🛒 + 📋                       ║'.cyan);
+  console.log('║        🏭 + + 🛒 + 📋                       ║'.cyan);
   console.log('╚══════════════════════════════════════════════════╝'.cyan);
   console.log();
 
@@ -709,7 +709,7 @@ async function seedAll() {
     // 1. Логин
     const loggedIn = await login();
     if (!loggedIn) {
-      log.error('❌ Не удалось войти в систему');
+      log.error('Не удалось войти в систему');
       return;
     }
     await delay(300);
@@ -787,7 +787,7 @@ async function seedAll() {
 
     console.log(`  📁 Категории:        5 шт`);
     console.log(`  🏷️  Бренды:          5 шт`);
-    console.log(`  📦 Товары:           ${IDs.productIds.length} шт (IDs: ${IDs.productIds.join(', ')})`);
+    console.log(`  Товары:           ${IDs.productIds.length} шт (IDs: ${IDs.productIds.join(', ')})`);
     console.log(`  📊 Характеристики:   ${IDs.characteristicIds.length} шт`);
     console.log(`  🏷️  Скидки:          ${IDs.discountIds.length} шт`);
     console.log(`  🐾 Виды:             5 шт`);
@@ -796,14 +796,14 @@ async function seedAll() {
     console.log(`  ⭐ Отзывы:           ${IDs.reviewIds.length} шт`);
     console.log(`  ❤️ Избранное:        ${Math.min(IDs.productIds.length, 5)} товаров`);
     console.log(`  🏭 Склады:           ${IDs.repositoryIds.length} шт (IDs: ${IDs.repositoryIds.join(', ')})`);
-    console.log(`  📦 Инвентаризация:   ${IDs.inventoryIds.length} шт`);
+    console.log(`  Инвентаризация:   ${IDs.inventoryIds.length} шт`);
     console.log(`  📊 Остатки на складах: ${IDs.stockIds.length} шт`);
     console.log(`  🛒 Корзина:          Заполнена ✅`);
     console.log(`  📋 Статус заказа:    ${IDs.orderStatusId ? '✅' : '❌'}`);
-    console.log(`  📦 Заказы:           ${IDs.orderIds.length} шт (IDs: ${IDs.orderIds.join(', ')})`);
+    console.log(`  Заказы:           ${IDs.orderIds.length} шт (IDs: ${IDs.orderIds.join(', ')})`);
 
     console.log();
-    console.log('✅ БАЗА ДАННЫХ ПОЛНОСТЬЮ ЗАПОЛНЕНА!'.brightGreen);
+    console.log('БАЗА ДАННЫХ ПОЛНОСТЬЮ ЗАПОЛНЕНА!'.brightGreen);
     console.log();
     console.log('📝 Данные для входа:'.yellow);
     console.log(`   Администратор: admin@example.com / admin123`.gray);
@@ -818,7 +818,7 @@ async function seedAll() {
     console.log('   SELECT * FROM orders;'.gray);
 
   } catch (error) {
-    console.error('❌ Критическая ошибка:', error.message);
+    console.error('Критическая ошибка:', error.message);
   }
 }
 

@@ -22,8 +22,8 @@ const DATA = {
 
 const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
-  success: (msg) => console.log(`✅ ${msg}`.green),
-  error: (msg) => console.log(`❌ ${msg}`.red),
+  success: (msg) => console.log(`${msg}`.green),
+  error: (msg) => console.log(`${msg}`.red),
   warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
@@ -90,7 +90,7 @@ async function getProduct() {
   try {
     const res = await api('get', '/products', null, ADMIN_TOKEN);
     if (res.data.length === 0) {
-      log.error('❌ Нет товаров! Сначала создайте товары.');
+      log.error('Нет товаров! Сначала создайте товары.');
       return false;
     }
     DATA.productId = res.data[0].id;
@@ -180,7 +180,7 @@ async function checkCartAvailability() {
   try {
     const res = await api('get', '/cart/check-availability', null, USER_TOKEN);
     if (res.data.available) {
-      log.success('✅ Все товары в наличии');
+      log.success('Все товары в наличии');
     } else {
       log.warn('⚠️ Некоторые товары отсутствуют на складе');
     }
@@ -252,9 +252,9 @@ async function checkInventoryAfterOrder() {
     log.info(`📊 Фактический остаток: ${inventory.quantity} шт.`);
 
     if (inventory.quantity === expectedStock) {
-      log.success('✅ Количество товара уменьшилось корректно!');
+      log.success('Количество товара уменьшилось корректно!');
     } else {
-      log.error(`❌ Несоответствие! Ожидалось: ${expectedStock}, Фактически: ${inventory.quantity}`);
+      log.error(`Несоответствие! Ожидалось: ${expectedStock}, Фактически: ${inventory.quantity}`);
     }
 
     return inventory;
@@ -347,7 +347,7 @@ async function testWarehouseFlow() {
     await delay(200);
 
     if (!DATA.productId) {
-      log.error('❌ Нет товара для тестирования');
+      log.error('Нет товара для тестирования');
       return;
     }
 
@@ -416,7 +416,7 @@ async function testWarehouseFlow() {
     console.log(`  Заказ ID:          ${DATA.orderId || '❌'}`);
 
     console.log();
-    console.log('✅ ТЕСТИРОВАНИЕ ЗАВЕРШЕНО!'.brightGreen);
+    console.log('ТЕСТИРОВАНИЕ ЗАВЕРШЕНО!'.brightGreen);
     console.log();
     console.log('📝 Проверьте:'.yellow);
     console.log('   - Инвентаризация уменьшилась на количество заказанных товаров'.gray);
@@ -424,7 +424,7 @@ async function testWarehouseFlow() {
     console.log('   - Заказ создан успешно'.gray);
 
   } catch (error) {
-    console.error('❌ Критическая ошибка:', error.message);
+    console.error('Критическая ошибка:', error.message);
   }
 }
 

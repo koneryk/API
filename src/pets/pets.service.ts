@@ -23,7 +23,7 @@ export class PetsService {
   ) {}
 
 
-  async createPet(createPetDto: CreatePetDto, userId: number): Promise<Pet> {
+  async createPet(createPetDto: CreatePetDto, userId: Pet["user_id"]): Promise<Pet> {
     const petData = {
       user_id: userId,
       breed_id: createPetDto.breed_id,
@@ -45,14 +45,14 @@ export class PetsService {
     });
   }
 
-  async findPetsByUser(userId: number): Promise<Pet[]> {
+  async findPetsByUser(userId: Pet["user_id"]): Promise<Pet[]> {
     return this.petModel.findAll({
       where: { user_id: userId },
       include: [{ model: Breed, include: [{ model: Species }] }],
     });
   }
 
-  async findOnePet(id: number): Promise<Pet> {
+  async findOnePet(id: Pet["id"]): Promise<Pet> {
   if (!id || isNaN(id)) {
     throw new HttpException('Некорректный ID питомца', HttpStatus.BAD_REQUEST);
   }
@@ -71,13 +71,13 @@ export class PetsService {
   return pet;
 }
 
-  async updatePet(id: number, updatePetDto: UpdatePetDto): Promise<Pet> {
+  async updatePet(id: Pet["id"], updatePetDto: UpdatePetDto): Promise<Pet> {
     const pet = await this.findOnePet(id);
     await pet.update(updatePetDto);
     return this.findOnePet(id);
   }
 
-  async removePet(id: number): Promise<void> {
+  async removePet(id: Pet["id"]): Promise<void> {
     const pet = await this.findOnePet(id);
     await pet.destroy();
   }
@@ -107,7 +107,7 @@ export class PetsService {
     });
   }
 
-  async findBreedsBySpecies(speciesId: number): Promise<Breed[]> {
+  async findBreedsBySpecies(speciesId: Species["id"]): Promise<Breed[]> {
     const species = await this.speciesModel.findByPk(speciesId);
     if (!species) {
       throw new HttpException('Вид не найден', HttpStatus.NOT_FOUND);
@@ -119,7 +119,7 @@ export class PetsService {
     });
   }
 
-  async findOneBreed(id: number): Promise<Breed> {
+  async findOneBreed(id: Breed["id"]): Promise<Breed> {
     const breed = await this.breedModel.findByPk(id, {
       include: [
         { model: Species },
@@ -134,13 +134,13 @@ export class PetsService {
     return breed;
   }
 
-  async updateBreed(id: number, updateBreedDto: UpdateBreedDto): Promise<Breed> {
+  async updateBreed(id: Breed["id"], updateBreedDto: UpdateBreedDto): Promise<Breed> {
     const breed = await this.findOneBreed(id);
     await breed.update(updateBreedDto);
     return this.findOneBreed(id);
   }
 
-  async removeBreed(id: number): Promise<void> {
+  async removeBreed(id: Breed["id"]): Promise<void> {
     const breed = await this.findOneBreed(id);
     await breed.destroy();
   }
@@ -160,7 +160,7 @@ export class PetsService {
     });
   }
 
-  async findOneSpecies(id: number): Promise<Species> {
+  async findOneSpecies(id: Species["id"]): Promise<Species> {
     const species = await this.speciesModel.findByPk(id, {
       include: [{ model: Breed }],
     });
@@ -172,13 +172,13 @@ export class PetsService {
     return species;
   }
 
-  async updateSpecies(id: number, updateSpeciesDto: UpdateSpeciesDto): Promise<Species> {
+  async updateSpecies(id: Species["id"], updateSpeciesDto: UpdateSpeciesDto): Promise<Species> {
     const species = await this.findOneSpecies(id);
     await species.update(updateSpeciesDto);
     return this.findOneSpecies(id);
   }
 
-  async removeSpecies(id: number): Promise<void> {
+  async removeSpecies(id: Species["id"]): Promise<void> {
     const species = await this.findOneSpecies(id);
     await species.destroy();
   }

@@ -49,7 +49,7 @@ export class CategoriesService {
     });
   }
 
-  async findOne(id: number): Promise<Category> {
+  async findOne(id: Category["id"]): Promise<Category> {
     const category = await this.categoryModel.findByPk(id, {
       include: [
         { model: Category, as: 'parent' },
@@ -74,7 +74,7 @@ export class CategoriesService {
     return category;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Category["id"]): Promise<void> {
     const category = await this.findOne(id);
     await category.destroy();
   }

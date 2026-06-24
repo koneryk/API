@@ -33,28 +33,28 @@ export class ReviewsService {
     });
   }
 
-  async findByProduct(productId: number): Promise<Review[]> {
+  async findByProduct(productId: Review["product_id"]): Promise<Review[]> {
     return this.reviewModel.findAll({
       where: { product_id: productId },
       include: [{ model: User }],
     });
   }
 
-  async findByUser(userId: number): Promise<Review[]> {
+  async findByUser(userId: Review["user_id"]): Promise<Review[]> {
     return this.reviewModel.findAll({
       where: { user_id: userId },
       include: [{ model: Product }],
     });
   }
 
-  async findApprovedByProduct(productId: number): Promise<Review[]> {
+  async findApprovedByProduct(productId: Review["product_id"]): Promise<Review[]> {
     return this.reviewModel.findAll({
       where: { product_id: productId, is_approved: true },
       include: [{ model: User }],
     });
   }
 
-  async findOne(id: number): Promise<Review> {
+  async findOne(id: Review["id"]): Promise<Review> {
     const review = await this.reviewModel.findByPk(id, {
       include: [
         { model: Product },
@@ -69,25 +69,25 @@ export class ReviewsService {
     return review;
   }
 
-  async update(id: number, updateReviewDto: UpdateReviewDto): Promise<Review> {
+  async update(id: Review["id"], updateReviewDto: UpdateReviewDto): Promise<Review> {
     const review = await this.findOne(id);
     await review.update(updateReviewDto);
     return review;
   }
 
-  async approve(id: number): Promise<Review> {
+  async approve(id: Review["id"]): Promise<Review> {
     const review = await this.findOne(id);
     await review.update({ is_approved: true });
     return review;
   }
 
-  async reject(id: number): Promise<Review> {
+  async reject(id: Review["id"]): Promise<Review> {
     const review = await this.findOne(id);
     await review.update({ is_approved: false });
     return review;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Review["id"]): Promise<void> {
     const review = await this.findOne(id);
     await review.destroy();
   }

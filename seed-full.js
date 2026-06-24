@@ -21,8 +21,8 @@ const IDs = {
 
 const log = {
   info: (msg) => console.log(`ℹ️ ${msg}`.blue),
-  success: (msg) => console.log(`✅ ${msg}`.green),
-  error: (msg) => console.log(`❌ ${msg}`.red),
+  success: (msg) => console.log(`${msg}`.green),
+  error: (msg) => console.log(`${msg}`.red),
   warn: (msg) => console.log(`⚠️ ${msg}`.yellow),
   separator: () => console.log('═'.repeat(80).gray),
 };
@@ -342,7 +342,7 @@ async function seedAll() {
 
     console.log();
     if (IDs.stockIds.length > 0) {
-      console.log('✅ БАЗА ДАННЫХ УСПЕШНО ЗАПОЛНЕНА!'.brightGreen);
+      console.log('БАЗА ДАННЫХ УСПЕШНО ЗАПОЛНЕНА!'.brightGreen);
     } else {
       console.log('⚠️ ОСТАТКИ НЕ СОЗДАНЫ'.brightYellow);
       console.log('💡 Проверьте вручную:');
@@ -351,7 +351,7 @@ async function seedAll() {
       console.log('   SELECT * FROM repository_stocks;');
     }
   } catch (error) {
-    console.error('❌ Критическая ошибка:', error.message);
+    console.error('Критическая ошибка:', error.message);
   }
 }
 

@@ -73,7 +73,7 @@ export class ProductsService {
     });
   }
 
-  async findByCategory(categoryId: number): Promise<Product[]> {
+  async findByCategory(categoryId: Product["category_id"]): Promise<Product[]> {
     return this.productModel.findAll({
       where: { category_id: categoryId, is_active: true },
       include: [
@@ -83,7 +83,7 @@ export class ProductsService {
     });
   }
 
-  async findByBrand(brandId: number): Promise<Product[]> {
+  async findByBrand(brandId: Product["brand_id"]): Promise<Product[]> {
     return this.productModel.findAll({
       where: { brand_id: brandId, is_active: true },
       include: [
@@ -111,7 +111,7 @@ export class ProductsService {
     });
   }
 
-  async findOne(id: number): Promise<Product> {
+  async findOne(id: Product["id"]): Promise<Product> {
     const product = await this.productModel.findByPk(id, {
       include: [
         { model: Category, as: 'category' },
@@ -140,7 +140,7 @@ export class ProductsService {
     return product;
   }
 
-  async findBySku(sku: string): Promise<Product> {
+  async findBySku(sku: Product["sku"]): Promise<Product> {
     const product = await this.productModel.findOne({
       where: { sku },
       include: [
@@ -157,7 +157,7 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(id: Product["id"], updateProductDto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
     
     const updateData: any = { ...updateProductDto };
@@ -172,7 +172,7 @@ export class ProductsService {
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: Product["id"]): Promise<void> {
     const product = await this.findOne(id);
     await product.destroy();
   }
@@ -207,7 +207,7 @@ export class ProductsService {
     });
   }
 
-  async findByProductProductImages(productId: number): Promise<ProductImage[]> {
+  async findByProductProductImages(productId: ProductImage["product_id"]): Promise<ProductImage[]> {
     const product = await this.productModel.findByPk(productId);
     if (!product) {
       throw new HttpException('Товар не найден', HttpStatus.NOT_FOUND);
@@ -218,13 +218,13 @@ export class ProductsService {
     });
   }
 
-  async findPrimaryProductImage(productId: number): Promise<ProductImage | null> {
+  async findPrimaryProductImage(productId: ProductImage["product_id"]): Promise<ProductImage | null> {
     return this.productImageModel.findOne({
       where: { product_id: productId, is_primary: true },
     });
   }
 
-  async findOneProductImage(id: number): Promise<ProductImage> {
+  async findOneProductImage(id: ProductImage["id"]): Promise<ProductImage> {
     const image = await this.productImageModel.findByPk(id, {
       include: [{ model: Product, as: 'product' }],
     });
@@ -236,13 +236,13 @@ export class ProductsService {
     return image;
   }
 
-  async updateProductImage(id: number, updateProductImageDto: UpdateProductImageDto): Promise<ProductImage> {
+  async updateProductImage(id: ProductImage["id"], updateProductImageDto: UpdateProductImageDto): Promise<ProductImage> {
     const image = await this.findOneProductImage(id);
     await image.update(updateProductImageDto);
     return this.findOneProductImage(id);
   }
 
-  async setPrimaryProductImage(id: number): Promise<ProductImage> {
+  async setPrimaryProductImage(id: ProductImage["id"]): Promise<ProductImage> {
     const image = await this.findOneProductImage(id);
 
     await this.productImageModel.update(
@@ -255,7 +255,7 @@ export class ProductsService {
     return this.findOneProductImage(id);
   }
 
-  async removeProductImage(id: number): Promise<void> {
+  async removeProductImage(id: ProductImage["id"]): Promise<void> {
     const image = await this.findOneProductImage(id);
     await image.destroy();
   }
@@ -284,7 +284,7 @@ export class ProductsService {
     });
   }
 
-  async findByProductProductCharacteristics(productId: number): Promise<ProductCharacteristic[]> {
+  async findByProductProductCharacteristics(productId: ProductCharacteristic["product_id"]): Promise<ProductCharacteristic[]> {
     const product = await this.productModel.findByPk(productId);
     if (!product) {
       throw new HttpException('Товар не найден', HttpStatus.NOT_FOUND);
@@ -296,7 +296,7 @@ export class ProductsService {
     });
   }
 
-  async findOneProductCharacteristic(id: number): Promise<ProductCharacteristic> {
+  async findOneProductCharacteristic(id: ProductImage["id"]): Promise<ProductCharacteristic> {
     const item = await this.productCharacteristicModel.findByPk(id, {
       include: [
         { model: Product, as: 'product' },
@@ -312,7 +312,7 @@ export class ProductsService {
   }
 
   async updateProductCharacteristic(
-    id: number,
+    id: ProductCharacteristic["id"],
     updateDto: UpdateProductCharacteristicDto
   ): Promise<ProductCharacteristic> {
     const item = await this.findOneProductCharacteristic(id);
@@ -320,7 +320,7 @@ export class ProductsService {
     return this.findOneProductCharacteristic(id);
   }
 
-  async removeProductCharacteristic(id: number): Promise<void> {
+  async removeProductCharacteristic(id: ProductCharacteristic["id"]): Promise<void> {
     const item = await this.findOneProductCharacteristic(id);
     await item.destroy();
   }

@@ -62,11 +62,11 @@ export class InventoryService {
       is_available: quantity > 0,
     });
 
-    this.logger.log(`📦 Товар ${productId}: обновлён остаток → ${quantity} шт.`);
+    this.logger.log(`Товар ${productId}: обновлён остаток → ${quantity} шт.`);
     return inventory;
   }
 
-  async addStock(productId: number, quantity: number): Promise<ProductInventory> {
+  async addStock(productId: ProductInventory["product_id"], quantity: ProductInventory["quantity"]): Promise<ProductInventory> {
     const inventory = await this.getProductStock(productId);
     const newQuantity = inventory.quantity + quantity;
     
@@ -76,14 +76,14 @@ export class InventoryService {
     });
 
     if (newQuantity > 0 && !inventory.is_available) {
-      this.logger.log(`✅ Товар ${productId} снова в наличии! (${newQuantity} шт.)`);
+      this.logger.log(`Товар ${productId} снова в наличии! (${newQuantity} шт.)`);
     }
 
-    this.logger.log(`📦 Товар ${productId}: добавлено ${quantity} шт. → ${newQuantity} шт.`);
+    this.logger.log(`Товар ${productId}: добавлено ${quantity} шт. → ${newQuantity} шт.`);
     return inventory;
   }
 
-  async reduceStock(productId: number, quantity: number): Promise<ProductInventory> {
+  async reduceStock(productId: RepositoryStock["product_id"], quantity: RepositoryStock["quantity"]): Promise<ProductInventory> {
     const inventory = await this.getProductStock(productId);
     
     if (inventory.quantity < quantity) {
@@ -104,14 +104,14 @@ export class InventoryService {
     }
 
     if (newQuantity === 0) {
-      this.logger.error(`❌ Товар ${productId} закончился!`);
+      this.logger.error(`Товар ${productId} закончился!`);
     }
 
-    this.logger.log(`📦 Товар ${productId}: уменьшено на ${quantity} шт. → ${newQuantity} шт.`);
+    this.logger.log(`Товар ${productId}: уменьшено на ${quantity} шт. → ${newQuantity} шт.`);
     return inventory;
   }
 
-  async checkAvailability(productId: number, quantity: number): Promise<{
+  async checkAvailability(productId: ProductInventory['product_id'], quantity: ProductInventory["quantity"]): Promise<{
     available: boolean;
     currentStock: number;
     minStock: number;
@@ -157,7 +157,7 @@ export class InventoryService {
     });
   }
 
-  async bulkUpdateStock(updates: { productId: number; quantity: number }[]): Promise<void> {
+  async bulkUpdateStock(updates: { productId: RepositoryStock["product_id"]; quantity: RepositoryStock["quantity"] }[]): Promise<void> {
     for (const update of updates) {
       await this.updateStock(update.productId, update.quantity);
     }
@@ -165,7 +165,6 @@ export class InventoryService {
   async syncInventory(productId: number): Promise<ProductInventory> {
     this.logger.log(`🔄 Синхронизация инвентаризации для товара ${productId}`);
 
-    // Получаем все остатки товара на складах
     const stocks = await this.repositoryStockModel.findAll({
       where: { product_id: productId },
     });
@@ -183,14 +182,14 @@ export class InventoryService {
         min_stock: 5,
         is_available: totalQuantity > 0,
       } as any);
-      this.logger.log(`✅ Создана инвентаризация для товара ${productId}: ${totalQuantity} шт.`);
+      this.logger.log(`Создана инвентаризация для товара ${productId}: ${totalQuantity} шт.`);
     } else {
       const oldQuantity = inventory.quantity;
       await inventory.update({
         quantity: totalQuantity,
         is_available: totalQuantity > 0,
       });
-      this.logger.log(`✅ Инвентаризация обновлена: ${oldQuantity} → ${totalQuantity} шт.`);
+      this.logger.log(`Инвентаризация обновлена: ${oldQuantity} → ${totalQuantity} шт.`);
     }
 
     return inventory;
@@ -207,15 +206,15 @@ export class InventoryService {
         await this.syncInventory(product.id);
         synced++;
       } catch (error) {
-        this.logger.error(`❌ Ошибка синхронизации товара ${product.id}: ${error.message}`);
+        this.logger.error(`Ошибка синхронизации товара ${product.id}: ${error.message}`);
         errors++;
       }
     }
 
-    this.logger.log(`✅ Синхронизировано: ${synced} товаров, ошибок: ${errors}`);
+    this.logger.log(`Синхронизировано: ${synced} товаров, ошибок: ${errors}`);
     return { synced, errors };
   }
-  async checkInventorySync(productId: number): Promise<{
+  async checkInventorySync(productId: ProductInventory["product_id"]): Promise<{
     isSynced: boolean;
     inventoryQuantity: number;
     repositoryTotal: number;

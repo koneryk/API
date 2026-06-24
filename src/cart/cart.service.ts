@@ -195,13 +195,13 @@ export class CartService {
     await cartItem.destroy();
   }
 
-  async clearCart(userId: number): Promise<void> {
+  async clearCart(userId: CartItem["user_id"]): Promise<void> {
     await this.cartModel.destroy({
       where: { user_id: userId },
     });
   }
 
-  async checkAvailability(userId: number): Promise<AvailabilityResult> {
+  async checkAvailability(userId: CartItem["user_id"]): Promise<AvailabilityResult> {
     const cartItems = await this.cartModel.findAll({
       where: { user_id: userId },
       include: [

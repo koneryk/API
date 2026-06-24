@@ -75,7 +75,7 @@ export class DiscountProductsService {
     return item;
   }
 
-  async remove(discountId: number, productId: number): Promise<void> {
+  async remove(discountId: DiscountProduct["discount_id"], productId: DiscountProduct['product_id']): Promise<void> {
     if (!discountId || !productId) {
       throw new HttpException('discountId и productId обязательны', HttpStatus.BAD_REQUEST);
     }
